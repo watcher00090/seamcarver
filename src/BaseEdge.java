@@ -10,9 +10,9 @@ import java.util.Objects;
  * @param <THIS> The edge type.
  */
 public abstract class BaseEdge<V, THIS extends BaseEdge<V, THIS>> {
-    protected final V from;
+    protected V from;
     protected final V to;
-    protected final double weight;
+    protected double weight;
 
     public BaseEdge(V from, V to, double weight) {
         this.from = from;

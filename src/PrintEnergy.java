@@ -6,7 +6,7 @@ import edu.princeton.cs.algs4.Picture;
 public class PrintEnergy {
     public static void main(String[] args) {
         EnergyFunction energyFunction = new DualGradientEnergyFunction();
-        Picture picture = PictureUtils.loadPicture("3x4.png");
+        Picture picture = PictureUtils.loadPicture("java bread.jpg");
         main(energyFunction, picture);
     }
 

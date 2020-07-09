@@ -20,3 +20,5 @@ public class ShowEnergy {
         PictureUtils.showEnergy(sc);
     }
 }
+
+
