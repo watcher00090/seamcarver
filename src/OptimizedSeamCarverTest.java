@@ -7,7 +7,7 @@ public class OptimizedSeamCarverTest {
 
     @Test
     public void energyCalculationsMatchUp() {
-
+        
     }
 
     @Test

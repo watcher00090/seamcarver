@@ -362,6 +362,7 @@ public class DijkstraSeamFinder implements SeamFinder {
             return v.edgeList;
         }
 
+        // todo: take care of the vertices above a given vertex being deleted?
 
         public VerticalSeamGraphOptimized UpdateVerticalSeamGraph(VerticalSeamGraphOptimized oldVSGraph, double[][] energies, Picture picture, List<Integer> lastSeam) {
             if (oldVSGraph == null) {
@@ -415,6 +416,18 @@ public class DijkstraSeamFinder implements SeamFinder {
 
                             }
 
+                            if (((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottomLeft != null){
+
+                                ((VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottomLeft)).topRight = ((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).right;
+
+                            }
+
+                            if (((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottom != null){
+
+                                ((VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottom)).top = ((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).top;
+
+                            }
+
                         } else if (deletionCase == DeletionCase.case2) {
 
                             if (((VerticalSeamGraphVertexNonEndpoint) prevVertex).right != null) {
@@ -457,6 +470,24 @@ public class DijkstraSeamFinder implements SeamFinder {
                                 (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).left)).bottom = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottom;
 
                                 (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).left)).right = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).right;
+
+                            }
+
+                            if (((VerticalSeamGraphVertexNonEndpoint) prevVertex).left != null) {
+
+                                (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).left)).right = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).right;
+
+                            }
+
+                            if (((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottomRight != null){
+
+                                ((VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottomRight)).topLeft = ((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).left;
+
+                            }
+
+                            if (((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottom != null){
+
+                                ((VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottom)).top = ((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).top;
 
                             }
 
