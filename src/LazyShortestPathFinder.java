@@ -6,7 +6,6 @@ import java.util.Objects;
  *
  * Checks the start vertex for an edge directly to the end vertex, and gives up if it doesn't.
  */
-
 public class LazyShortestPathFinder<G extends Graph<V, E>, V, E extends BaseEdge<V, E>>
     implements ShortestPathFinder<G, V, E> {
     @Override

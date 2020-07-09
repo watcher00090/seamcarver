@@ -10,7 +10,7 @@ import java.util.List;
  * Shows the sequence of seams being removed.
  */
 public class SeamCarverVisualizer {
-    protected static final String IMAGE_NAME = "java bread.png"; //"java bread.jpg";
+    protected static final String IMAGE_NAME = "small image 1";
     protected static final int NUM_PIXELS = 172800;
     private static final Utils.Orientation ORIENTATION = Utils.Orientation.HORIZONTAL;
     JFrame frame;

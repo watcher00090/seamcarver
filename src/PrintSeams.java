@@ -19,7 +19,7 @@ public class PrintSeams {
     }
 
     public static void main(String[] args) {
-        Picture picture = PictureUtils.loadPicture("java bread.png");
+        Picture picture = PictureUtils.loadPicture("small image 1");
         SeamCarver carver = new SeamCarver(picture, new DualGradientEnergyFunction(), new DijkstraSeamFinder());
         main(carver, picture);
     }

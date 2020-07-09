@@ -18,6 +18,222 @@ enum Dir {
     x, y;
 }
 
+class RedColorFunction implements Function<VerticalSeamGraphVertexNonEndpoint, Integer> {
+    public Integer apply(VerticalSeamGraphVertexNonEndpoint x) {
+        int rgb = x.getRGB();
+        int r = (rgb >> 16) & 0xFF;
+        return r;
+    }
+}
+
+class GreenColorFunction implements Function<VerticalSeamGraphVertexNonEndpoint, Integer> {
+    public Integer apply(VerticalSeamGraphVertexNonEndpoint x) {
+        int rgb = x.getRGB();
+        int g = (rgb >> 8) & 0xFF;
+        return g;
+    }
+}
+
+class BlueColorFunction implements Function<VerticalSeamGraphVertexNonEndpoint, Integer> {
+    public Integer apply(VerticalSeamGraphVertexNonEndpoint x) {
+        int rgb = x.getRGB();
+        int b = (rgb >> 0) & 0xFF;
+        return b;
+    }
+}
+
+
+// (x,y) coordinates of a pixel
+public class Pair<T> {
+    public T x;
+    public T y;
+
+    public Pair(T x, T y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    public boolean equalsPoint(Pair<T> p) {
+        return p.x == x && p.y == y;
+    }
+}
+
+public enum DeletionCase {case1, case2, case3};
+
+
+
+public class VerticalSeamGraphVertex {
+    Pair<Integer> coord;
+    boolean isSource;
+    boolean isSink;
+    public ArrayList<Edge<VerticalSeamGraphVertex>> edgeList;
+
+    // if we're the source, child1 points to a linked list of vertices
+    public VerticalSeamGraphVertex(Pair<Integer> coord) {
+        this.coord = coord;
+        this.edgeList = new ArrayList<>();
+    }
+
+    public boolean equals(VerticalSeamGraphVertex v) {
+        return (this.coord.x == v.coord.x && this.coord.y == v.coord.y);
+    }
+
+    public void makeEdgeList() {
+        return;
+    }
+
+}
+
+// if we're at the bottom of the image, we only have bottomedge (the other edges will be null)
+public class VerticalSeamGraphVertexNonEndpoint extends VerticalSeamGraphVertex {
+    public VerticalSeamGraphVertex topLeft = null;
+    public VerticalSeamGraphVertex top = null;
+    public VerticalSeamGraphVertex topRight = null;
+    public VerticalSeamGraphVertex left = null;
+    public VerticalSeamGraphVertex right = null;
+    public VerticalSeamGraphVertex bottomLeft = null;
+    public VerticalSeamGraphVertex bottom = null;
+    public VerticalSeamGraphVertex bottomRight = null;
+
+    public Edge<VerticalSeamGraphVertex> leftEdge;
+    public Edge<VerticalSeamGraphVertex> bottomEdge;
+    public Edge<VerticalSeamGraphVertex> rightEdge;
+
+    int rgb;
+
+    public VerticalSeamGraphVertexNonEndpoint(Pair<Integer> coord, int rgb) {
+        super(coord);
+        leftEdge = new Edge<VerticalSeamGraphVertex>(null, null,0);
+        bottomEdge = new Edge<VerticalSeamGraphVertex>(null, null,0);
+        rightEdge = new Edge<VerticalSeamGraphVertex>(null, null,0);
+        isSource = false;
+        isSink = false;
+    }
+
+    // todo: pass in rgb from the picture when creating this vertex
+
+    public int getRGB() {
+        return rgb;
+    }
+
+}
+
+class VerticalSeamGraphVertexSource extends VerticalSeamGraphVertex {
+    public VerticalSeamGraphVertex leftChild; // linked list of children (starting with the leftmost)
+
+    public VerticalSeamGraphVertexSource(Pair<Integer> coord) {
+        super(coord);
+        isSource = true;
+        isSink = false;
+    }
+
+}
+
+class VerticalSeamGraphVertexSink extends VerticalSeamGraphVertex {
+    public VerticalSeamGraphVertex leftParent; // linked list of parents (starting with the leftmost)
+
+    public VerticalSeamGraphVertexSink(Pair<Integer> coord) {
+        super(coord);
+        isSource = false;
+        isSink = true;
+    }
+}
+
+
+class DualGradientEnergyFunctionNodal implements NodalEnergyFunction {
+    
+    RedColorFunction r_func;
+    BlueColorFunction b_func;
+    GreenColorFunction g_func;
+    
+    public double apply(VerticalSeamGraphVertexNonEndpoint v) {
+        System.out.println("Calling DualGradientEnergyFunction::apply....");
+
+        DifferenceType xDifferenceType = getXDifferenceType(v);
+        DifferenceType yDifferenceType = getYDifferenceType(v);
+        int R_x = computeGrad(v, r_func, xDifferenceType, Dir.x);
+        int G_x = computeGrad(v, g_func, xDifferenceType, Dir.x);
+        int B_x = computeGrad(v, b_func, xDifferenceType, Dir.x);
+
+        int R_y = computeGrad(v, r_func, yDifferenceType, Dir.y);
+        int G_y = computeGrad(v, g_func, yDifferenceType, Dir.y);
+        int B_y = computeGrad(v, b_func, yDifferenceType, Dir.y);
+
+        int del_2_x = R_x * R_x + G_x * G_x + B_x * B_x;
+        int del_2_y = R_y * R_y + G_y * G_y + B_y * B_y;
+
+        return Math.sqrt(del_2_x + del_2_y);
+    }
+
+    private static int computeGrad(VerticalSeamGraphVertexNonEndpoint v, Function<VerticalSeamGraphVertexNonEndpoint, Integer> func, DifferenceType differenceType, Dir d) {
+        if (differenceType == DifferenceType.ForwardDifference && d == Dir.x) {
+            return forwardDiff_x(v, func);
+        } else if (differenceType == DifferenceType.ForwardDifference && d == Dir.y) {
+            return forwardDiff_y(v, func);
+        } else if (differenceType == DifferenceType.BackwardDifference && d == Dir.x) {
+            return backwardDiff_x(v, func);
+        } else if (differenceType == DifferenceType.BackwardDifference && d == Dir.y) {
+            return backwardDiff_y(v, func);
+        } else if (differenceType == DifferenceType.CentralDifference && d == Dir.x) {
+            return centralDiff_x(v, func);
+        } else if (differenceType == DifferenceType.CentralDifference && d == Dir.y) {
+            return centralDiff_y(v, func);
+        } else {
+            System.out.println("System error in computeGrad");
+            return -1;
+        }
+    }
+
+    private static DifferenceType getXDifferenceType(VerticalSeamGraphVertexNonEndpoint v) {
+        if (v.left == null) { // x == 0
+            return DifferenceType.ForwardDifference;
+        } else if (v.right == null) { // x == width - 1
+            return DifferenceType.BackwardDifference;
+        } else {
+            return DifferenceType.CentralDifference;
+        }
+    }
+
+    private static DifferenceType getYDifferenceType(VerticalSeamGraphVertexNonEndpoint v) {
+        if (v.top == null) { // y == 0
+            return DifferenceType.ForwardDifference;
+        } else if (v.bottomLeft == null && v.bottomRight == null) { // y == height - 1
+            return DifferenceType.BackwardDifference;
+        } else {
+            return DifferenceType.CentralDifference;
+        }
+    }
+
+    private static int forwardDiff_x(VerticalSeamGraphVertexNonEndpoint node, Function<VerticalSeamGraphVertexNonEndpoint, Integer> func) {
+        //return -3 * func.apply(x, y) + 4 * func.apply(x + 1, y) - func.apply(x + 2, y);
+        return -3 * func.apply(node) + 4 * func.apply((VerticalSeamGraphVertexNonEndpoint) node.right) - func.apply((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) (node.right)).right);
+    }
+
+    private static int forwardDiff_y(VerticalSeamGraphVertexNonEndpoint node, Function<VerticalSeamGraphVertexNonEndpoint, Integer> func) {
+        return -3 * func.apply(node) + 4 * func.apply((VerticalSeamGraphVertexNonEndpoint) node.bottom) - func.apply((VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) node.bottom ).bottom));
+    }
+
+    private static int backwardDiff_x(VerticalSeamGraphVertexNonEndpoint node, Function<VerticalSeamGraphVertexNonEndpoint, Integer> func) {
+        return -3 * func.apply(node) + 4 * func.apply((VerticalSeamGraphVertexNonEndpoint)node.left) - func.apply((VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) node.left).left));
+    }
+
+    private static int backwardDiff_y(VerticalSeamGraphVertexNonEndpoint node, Function<VerticalSeamGraphVertexNonEndpoint, Integer> func) {
+        return -3 * func.apply(node) + 4 * func.apply((VerticalSeamGraphVertexNonEndpoint) node.top) - func.apply((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint)node.top).top);
+    }
+
+    private static int centralDiff_x(VerticalSeamGraphVertexNonEndpoint node, Function<VerticalSeamGraphVertexNonEndpoint, Integer> func) {
+        //return func.apply(x + 1, y) - func.apply(x - 1, y);
+        return func.apply((VerticalSeamGraphVertexNonEndpoint) node.right) - func.apply((VerticalSeamGraphVertexNonEndpoint) node.left);
+    }
+
+    private static int centralDiff_y(VerticalSeamGraphVertexNonEndpoint node, Function<VerticalSeamGraphVertexNonEndpoint, Integer> func) {
+        //return func.apply(x, y + 1) - func.apply(x, y - 1);
+        return func.apply((VerticalSeamGraphVertexNonEndpoint) node.bottom) - func.apply((VerticalSeamGraphVertexNonEndpoint) node.top);
+    }
+
+}
+
+
 public class DijkstraSeamFinder implements SeamFinder {
     // Perhaps replace all 4 references to "Object" on the line below with whatever vertex type
     //  you choose for your graph
@@ -38,100 +254,6 @@ public class DijkstraSeamFinder implements SeamFinder {
         return new DijkstraShortestPathFinder<>();
     }
 
-    // (x,y) coordinates of a pixel
-    public class Pair<T> {
-        public T x;
-        public T y;
-
-        public Pair(T x, T y) {
-            this.x = x;
-            this.y = y;
-        }
-
-        public boolean equalsPoint(Pair<T> p) {
-            return p.x == x && p.y == y;
-        }
-    }
-
-    public enum DeletionCase {case1, case2, case3};
-
-    public class VerticalSeamGraphVertex {
-        Pair<Integer> coord;
-        boolean isSource;
-        boolean isSink;
-        public ArrayList<Edge<VerticalSeamGraphVertex>> edgeList;
-
-        // if we're the source, child1 points to a linked list of vertices
-        public VerticalSeamGraphVertex(Pair<Integer> coord) {
-            this.coord = coord;
-            this.edgeList = new ArrayList<>();
-        }
-
-        public boolean equals(VerticalSeamGraphVertex v) {
-            return (this.coord.x == v.coord.x && this.coord.y == v.coord.y);
-        }
-
-        public void makeEdgeList() {
-            return;
-        }
-
-    }
-
-    // if we're at the bottom of the image, we only have bottomedge (the other edges will be null)
-    public class VerticalSeamGraphVertexNonEndpoint extends VerticalSeamGraphVertex {
-        public VerticalSeamGraphVertex topLeft = null;
-        public VerticalSeamGraphVertex top = null;
-        public VerticalSeamGraphVertex topRight = null;
-        public VerticalSeamGraphVertex left = null;
-        public VerticalSeamGraphVertex right = null;
-        public VerticalSeamGraphVertex bottomLeft = null;
-        public VerticalSeamGraphVertex bottom = null;
-        public VerticalSeamGraphVertex bottomRight = null;
-
-        public Edge<VerticalSeamGraphVertex> leftEdge;
-        public Edge<VerticalSeamGraphVertex> bottomEdge;
-        public Edge<VerticalSeamGraphVertex> rightEdge;
-
-        int rgb;
-
-        public VerticalSeamGraphVertexNonEndpoint(Pair<Integer> coord, int rgb) {
-            super(coord);
-            leftEdge = new Edge<VerticalSeamGraphVertex>(null, null,0);
-            bottomEdge = new Edge<VerticalSeamGraphVertex>(null, null,0);
-            rightEdge = new Edge<VerticalSeamGraphVertex>(null, null,0);
-            isSource = false;
-            isSink = false;
-        }
-
-        // todo: pass in rgb from the picture when creating this vertex
-
-        public int getRGB() {
-            return rgb;
-        }
-
-    }
-
-    public class VerticalSeamGraphVertexSource extends VerticalSeamGraphVertex {
-        public VerticalSeamGraphVertex leftChild; // linked list of children (starting with the leftmost)
-
-        public VerticalSeamGraphVertexSource(Pair<Integer> coord) {
-            super(coord);
-            isSource = true;
-            isSink = false;
-        }
-
-    }
-
-    public class VerticalSeamGraphVertexSink extends VerticalSeamGraphVertex {
-        public VerticalSeamGraphVertex leftParent; // linked list of parents (starting with the leftmost)
-
-        public VerticalSeamGraphVertexSink(Pair<Integer> coord) {
-            super(coord);
-            isSource = false;
-            isSink = true;
-        }
-    }
-
     /* The vertex for a pixel is numbered by the (x,y) location of the pixel.
      * (0,0) (1,0) (2,0) (3,0) (4,0) .....
      * (0,1) (1,1) (2,1) (3,1) (4,1) .....
@@ -143,153 +265,19 @@ public class DijkstraSeamFinder implements SeamFinder {
      * edges from the bottom vertices to the end vertex, which all have weight 0.
      */
     public class VerticalSeamGraphOptimized implements Graph<VerticalSeamGraphVertex, Edge<VerticalSeamGraphVertex>> {
-        double[][] energies;
         VerticalSeamGraphVertexSource start;
         VerticalSeamGraphVertexSink end;
         int numHorizVertices;
         int numVertVertices;
-
-        RedColorFunction red_color_func;
-        GreenColorFunction green_color_func;
-        BlueColorFunction blue_color_func;
-
-        class RedColorFunction implements Function<VerticalSeamGraphVertexNonEndpoint, Integer> {
-
-            public RedColorFunction() {}
-
-            public Integer apply(VerticalSeamGraphVertexNonEndpoint v) {
-                int rgb = v.getRGB();
-                int r = (rgb >> 16) & 0xFF;
-                return r;
-            }
-        }
-
-        class G_func implements BiFunction<Integer, Integer, Integer> {
-            Picture picture;
-
-            public G_func(Picture picture) {
-                this.picture = picture;
-            }
-
-            public Integer apply(Integer x, Integer y) {
-                int rgb = picture.getRGB(x, y);
-                int g = (rgb >> 8) & 0xFF;
-                return g;
-            }
-        }
-
-        public class B_func implements BiFunction<Integer, Integer, Integer> {
-            Picture picture;
-
-            public B_func(Picture picture) {
-                this.picture = picture;
-            }
-
-            public Integer apply(Integer x, Integer y) {
-                int rgb = picture.getRGB(x, y);
-                int b = (rgb >> 0) & 0xFF;
-                return b;
-            }
-        }
-
-        class DualGradientEnergyFunction implements EnergyFunction {
-
-            @Override
-            public double apply(Picture picture, int x, int y) {
-                System.out.println("Calling DualGradientEnergyFunction::apply....");
-
-                DifferenceType xDifferenceType = getXDifferenceType(x, y, picture.width(), picture.height());
-                DifferenceType yDifferenceType = getYDifferenceType(x, y, picture.width(), picture.height());
-                int R_x = computeGrad(x, y, r_func, xDifferenceType, Dir.x);
-                int G_x = computeGrad(x, y, g_func, xDifferenceType, Dir.x);
-                int B_x = computeGrad(x, y, b_func, xDifferenceType, Dir.x);
-
-                int R_y = computeGrad(x, y, r_func, yDifferenceType, Dir.y);
-                int G_y = computeGrad(x, y, g_func, yDifferenceType, Dir.y);
-                int B_y = computeGrad(x, y, b_func, yDifferenceType, Dir.y);
-
-                int del_2_x = R_x * R_x + G_x * G_x + B_x * B_x;
-                int del_2_y = R_y * R_y + G_y * G_y + B_y * B_y;
-
-                return Math.sqrt(del_2_x + del_2_y);
-            }
-
-            private static int computeGrad(int x, int y, BiFunction<Integer, Integer, Integer> func, DifferenceType differenceType, Dir d) {
-                if (differenceType == DifferenceType.ForwardDifference && d == Dir.x) {
-                    return forwardDiff_x(x, y, func);
-                } else if (differenceType == DifferenceType.ForwardDifference && d == Dir.y) {
-                    return forwardDiff_y(x, y, func);
-                } else if (differenceType == DifferenceType.BackwardDifference && d == Dir.x) {
-                    return backwardDiff_x(x, y, func);
-                } else if (differenceType == DifferenceType.BackwardDifference && d == Dir.y) {
-                    return backwardDiff_y(x, y, func);
-                } else if (differenceType == DifferenceType.CentralDifference && d == Dir.x) {
-                    return centralDiff_x(x, y, func);
-                } else if (differenceType == DifferenceType.CentralDifference && d == Dir.y) {
-                    return centralDiff_y(x, y, func);
-                } else {
-                    System.out.println("System error in computeGrad");
-                    return -1;
-                }
-            }
-
-            private static DifferenceType getXDifferenceType(int x, int y, int width, int height) {
-                if (x == 0) {
-                    return DifferenceType.ForwardDifference;
-                } else if (x == width - 1) {
-                    return DifferenceType.BackwardDifference;
-                } else {
-                    return DifferenceType.CentralDifference;
-                }
-            }
-
-            private static DifferenceType getYDifferenceType(int x, int y, int width, int height) {
-                if (y == 0) {
-                    return DifferenceType.ForwardDifference;
-                } else if (y == height - 1) {
-                    return DifferenceType.BackwardDifference;
-                } else {
-                    return DifferenceType.CentralDifference;
-                }
-            }
-
-            private static int forwardDiff_x(int x, int y, BiFunction<Integer, Integer, Integer> func) {
-                return -3 * func.apply(x, y) + 4 * func.apply(x + 1, y) - func.apply(x + 2, y);
-            }
-
-            private static int forwardDiff_y(int x, int y, Function<VerticalSeamGraphVertex, Integer> func, VerticalSeamGraphVertexNonEndpoint node) {
-                // (x,y) val = func.apply(node)
-                // (x,y+1) val = func.apply(node.bottom)
-                // (x,y+2) val = func.apply(node.bottom.bottom)
-
-                return -3 * func.apply(node) + 4 * func.apply(node.bottom) - func.apply(((VerticalSeamGraphVertexNonEndpoint) node.bottom ).bottom);
-            }
-
-            private static int backwardDiff_x(Function<VerticalSeamGraphVertex, Integer> func, VerticalSeamGraphVertexNonEndpoint node) {
-                return -3 * func.apply(node) + 4 * func.apply(node.left) - func.apply(((VerticalSeamGraphVertexNonEndpoint)  node.left).left);
-            }
-
-            private static int backwardDiff_y(Function<VerticalSeamGraphVertex, Integer> func, VerticalSeamGraphVertexNonEndpoint node) {
-                return -3 * func.apply(node)) + 4 * func.apply(node.top) - func.apply(node.top.top);
-            }
-
-            private static int centralDiff_x(int x, int y, BiFunction<Integer, Integer, Integer> func) {
-                return func.apply(x + 1, y) - func.apply(x - 1, y);
-            }
-
-            private static int centralDiff_y(int x, int y, BiFunction<Integer, Integer, Integer> func) {
-                return func.apply(x, y + 1) - func.apply(x, y - 1);
-            }
-
-        }
-
-        public double energyOfPixel(int x, int y) {
-            return energies[x][y];
-        }
+        DualGradientEnergyFunctionNodal energyFunction;
+        double[][] energies;
+        Picture picture;
 
         // weight of edge = energy of 'from' vertex
-        public VerticalSeamGraphOptimized(double[][] energies) {
+        public VerticalSeamGraphOptimized(double[][] energies, Picture picture;) {
+            this.energyFunction = new DualGradientEnergyFunctionNodal();
             this.energies = energies;
+            this.picture = picture;
 
             assert (energies.length > 0 && energies[0].length > 0);
             numHorizVertices = energies.length;
@@ -308,13 +296,13 @@ public class DijkstraSeamFinder implements SeamFinder {
 
                     if (y == energies.length - 1) {
 
-                        prevRow[x] = new VerticalSeamGraphVertexNonEndpoint(new Pair<Integer>(x, y));
+                        prevRow[x] = new VerticalSeamGraphVertexNonEndpoint(new Pair<Integer>(x, y), picture.getRGB(x,y));
                         prevRow[x].bottomEdge = new Edge<VerticalSeamGraphVertex>(prevRow[x], end, energyOfPixel(x, y));
                         prevRow[x].edgeList.add(prevRow[x].bottomEdge);
 
                     } else {
 
-                        currRow[x] = new VerticalSeamGraphVertexNonEndpoint(new Pair<Integer>(x, y));
+                        currRow[x] = new VerticalSeamGraphVertexNonEndpoint(new Pair<Integer>(x, y), picture.getRGB(x,y));
                         currRow[x].leftEdge = new Edge<VerticalSeamGraphVertex>(currRow[x], prevRow[x - 1], energyOfPixel(x, y));
                         currRow[x].bottomEdge = new Edge<VerticalSeamGraphVertex>(currRow[x], prevRow[x], energyOfPixel(x, y));
                         currRow[x].rightEdge = new Edge<VerticalSeamGraphVertex>(currRow[x], prevRow[x + 1], energyOfPixel(x, y));
@@ -359,88 +347,154 @@ public class DijkstraSeamFinder implements SeamFinder {
             start.leftChild = prevRow[0];
         }
 
+        // update the weights of the edges of v
+        public void computeEnergy(VerticalSeamGraphVertexNonEndpoint v) {
+            if (v.leftEdge != null) v.leftEdge.weight = energyFunction.apply(v);
+            if (v.rightEdge != null) v.rightEdge.weight = energyFunction.apply(v);
+            if (v.bottomEdge != null) v.bottomEdge.weight = energyFunction.apply(v);
+        }
+
+        public double energyOfPixel(int x, int y) {
+            return energies[x][y];
+        }
+
         public Collection<Edge<VerticalSeamGraphVertex>> outgoingEdgesFrom(VerticalSeamGraphVertex v) {
             return v.edgeList;
         }
 
-        public int VerticalSeamGraphNew(double[][] energies, int funky, int funky2) {
-            return 0;
-/*
-            this.energies = energies;
-            start = new Pair<>(-1, -1);
-            end = new Pair<>(-2, -2);
-            assert (energies.length > 0 && energies[0].length > 0);
-            numHorizVertices = energies.length;
-            numVertVertices = energies[0].length;
-            List<> vertex;
 
-            Set<Edge<Pair<Integer>>> neighbors = new HashSet<>();
+        public VerticalSeamGraphOptimized UpdateVerticalSeamGraph(VerticalSeamGraphOptimized oldVSGraph, double[][] energies, Picture picture, List<Integer> lastSeam) {
+            if (oldVSGraph == null) {
+                return new VerticalSeamGraphOptimized(energies, picture);
+            } else {
+                try {
 
-            if (vertex.equalsPoint(start)) {
-                for (int x = 0; x < numHorizVertices; ++x) {
-                    neighbors.add(new Edge<>(start, new Pair<>(x, 0), energyOfPixel(x, 0)));
+                    // only delete vertices which are adjacent to the recently found seam
+                    VerticalSeamGraphVertex prevVertex =  oldVSGraph.start.edgeList.get(lastSeam.get(0)).to; // (currVertex and prevVertex as used to traverse the iamge)
+                    VerticalSeamGraphVertex currVertex = null;
+
+                    for (int i=1; i<lastSeam.size(); ++i) {
+
+                        int i1 = lastSeam.get(i-1);
+                        int i2 = lastSeam.get(i);
+
+                        DeletionCase deletionCase;
+
+                        if (i1 < i2) {
+                            currVertex = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottomRight;
+                            deletionCase = DeletionCase.case1;
+                        } else if (i1 > i2) {
+                            currVertex = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottomLeft;
+                            deletionCase = DeletionCase.case3;
+                        } else {
+                            currVertex = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottom;
+                            deletionCase = DeletionCase.case2;
+                        }
+
+                        VerticalSeamGraphVertex leftVertex = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).left;
+                        VerticalSeamGraphVertex rightVertex = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).right;
+
+                        if (deletionCase == DeletionCase.case1) {
+
+                            if (((VerticalSeamGraphVertexNonEndpoint) prevVertex).right != null) {
+
+                                (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).right)).leftEdge.from = (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottomLeft));
+
+                                (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).right)).bottomLeft = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottomLeft;
+
+                                (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).right)).bottomEdge.from = (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottom));
+
+                                (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).right)).bottom = (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottom));
+
+                                (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).right)).left = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).left;
+                            }
+
+                            if (((VerticalSeamGraphVertexNonEndpoint) prevVertex).left != null) {
+
+                                (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).left)).right = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).right;
+
+                            }
+
+                        } else if (deletionCase == DeletionCase.case2) {
+
+                            if (((VerticalSeamGraphVertexNonEndpoint) prevVertex).right != null) {
+
+                                ((VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) prevVertex).right)).leftEdge.from = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottomLeft;
+
+                                ((VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) prevVertex).right)).bottomLeft = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottomLeft;
+
+                                ((VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) prevVertex).right)).left = ((VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) prevVertex).left));
+
+                            }
+
+                            if (((VerticalSeamGraphVertexNonEndpoint) prevVertex).left != null) {
+
+                                ((VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) prevVertex).left)).rightEdge.from = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottomRight;
+
+                                ((VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) prevVertex).left)).bottomRight = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottomRight;
+
+                                ((VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) prevVertex).left)).right = ((VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) prevVertex).right));
+
+                            }
+
+
+                        } else { // case3
+
+                            if (((VerticalSeamGraphVertexNonEndpoint) prevVertex).right != null) {
+
+                                (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).right)).left = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).left;
+
+                            }
+
+                            if (((VerticalSeamGraphVertexNonEndpoint) prevVertex).left != null) {
+
+                                (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).left)).rightEdge.from = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottomRight;
+
+                                (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).left)).bottomRight = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottomRight;
+
+                                (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).left)).bottomEdge.from = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottom;
+
+                                (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).left)).bottom = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottom;
+
+                                (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).left)).right = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).right;
+
+                            }
+
+                        }
+
+                        computeEnergy((VerticalSeamGraphVertexNonEndpoint) prevVertex);
+
+                        // set prevVertex pointer
+                        prevVertex = currVertex;
+
+                    }
+
+                    // todo: handle case where currVertex is the sink
+
+                    if (((VerticalSeamGraphVertexNonEndpoint) prevVertex).left != null) {
+
+                        ((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).left).right != ((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).right;
+
+                    }
+
+                    if (((VerticalSeamGraphVertexNonEndpoint) prevVertex).right != null) {
+
+                        ((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).right).left != ((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).left;
+
+                    }
+
+                    // todo: remove vertex from left parent list of the sink???
+
+                    computeEnergy((VerticalSeamGraphVertexNonEndpoint) prevVertex);
+
+                } catch(Exception e) { // todo remove exception handling
+                    e.printStackTrace();
                 }
-                return neighbors;
             }
-
-            if (vertex.equalsPoint(end)) {
-                return neighbors; // no outgoing edges
-            }
-
-            if (vertex.y == numVertVertices - 1) {
-                neighbors.add(new Edge<>(vertex, end, 0));
-                return neighbors; // only an edge to end
-            }
-
-            List<Pair<Integer>> toVerticesOfOutgoingEdges = new ArrayList<Pair<Integer>>();
-
-            if (vertex.x != 0) {
-                toVerticesOfOutgoingEdges.add(new Pair<>(vertex.x - 1, vertex.y + 1));
-            }
-            toVerticesOfOutgoingEdges.add(new Pair<>(vertex.x, vertex.y + 1));
-            if (vertex.x != numHorizVertices - 1) {
-                toVerticesOfOutgoingEdges.add(new Pair<>(vertex.x + 1, vertex.y + 1));
-            }
-            for (Pair<Integer> toVertex : toVerticesOfOutgoingEdges) {
-                neighbors.add(new Edge<>(vertex, toVertex, energyOfPixel(toVertex.x, toVertex.y)));
-            }
-            return neighbors;
-            */
         }
 
-        public Collection<Edge<Pair<Integer>>> outgoingEdgesFrom_Old(Pair<Integer> vertex) {
-            Set<Edge<Pair<Integer>>> neighbors = new HashSet<>();
 
-            if (vertex.equalsPoint(start)) {
-                for (int x = 0; x < numHorizVertices; ++x) {
-                    neighbors.add(new Edge<>(start, new Pair<>(x, 0), energyOfPixel(x, 0)));
-                }
-                return neighbors;
-            }
 
-            if (vertex.equalsPoint(end)) {
-                return neighbors; // no outgoing edges
-            }
-
-            if (vertex.y == numVertVertices - 1) {
-                neighbors.add(new Edge<>(vertex, end, 0));
-                return neighbors; // only an edge to end
-            }
-
-            List<Pair<Integer>> toVerticesOfOutgoingEdges = new ArrayList<Pair<Integer>>();
-
-            if (vertex.x != 0) {
-                toVerticesOfOutgoingEdges.add(new Pair<>(vertex.x - 1, vertex.y + 1));
-            }
-            toVerticesOfOutgoingEdges.add(new Pair<>(vertex.x, vertex.y + 1));
-            if (vertex.x != numHorizVertices - 1) {
-                toVerticesOfOutgoingEdges.add(new Pair<>(vertex.x + 1, vertex.y + 1));
-            }
-            for (Pair<Integer> toVertex : toVerticesOfOutgoingEdges) {
-                neighbors.add(new Edge<>(vertex, toVertex, energyOfPixel(toVertex.x, toVertex.y)));
-            }
-            return neighbors;
-        }
 
     }
 
@@ -473,10 +527,6 @@ public class DijkstraSeamFinder implements SeamFinder {
             assert (energies.length > 0 && energies[0].length > 0);
             numHorizVertices = energies.length;
             numVertVertices = energies[0].length;
-        }
-
-        public void recomputeEnergy(VerticalSeamGraphVertexNonEndpoint v) {
-
         }
 
         public Collection<Edge<Pair<Integer>>> outgoingEdgesFrom(Pair<Integer> vertex) {
@@ -572,136 +622,6 @@ public class DijkstraSeamFinder implements SeamFinder {
             return neighbors;
         }
 
-    }
-
-    public VerticalSeamGraphOptimized UpdateVerticalSeamGraph(VerticalSeamGraphOptimized oldVSGraph, double[][] energies, List<Integer> lastSeam) {
-        if (oldVSGraph == null) {
-            return new VerticalSeamGraphOptimized(energies);
-        } else {
-            try {
-
-                // only delete vertices which are adjacent to the recently found seam
-                VerticalSeamGraphVertex prevVertex =  oldVSGraph.start.edgeList.get(lastSeam.get(0)).to; // (currVertex and prevVertex as used to traverse the iamge)
-                VerticalSeamGraphVertex currVertex = null;
-
-                for (int i=1; i<lastSeam.size(); ++i) {
-
-                    int i1 = lastSeam.get(i-1);
-                    int i2 = lastSeam.get(i);
-
-                    DeletionCase deletionCase;
-
-                    if (i1 < i2) {
-                        currVertex = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottomRight;
-                        deletionCase = DeletionCase.case1;
-                    } else if (i1 > i2) {
-                        currVertex = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottomLeft;
-                        deletionCase = DeletionCase.case3;
-                    } else {
-                        currVertex = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottom;
-                        deletionCase = DeletionCase.case2;
-                    }
-
-                    VerticalSeamGraphVertex leftVertex = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).left;
-                    VerticalSeamGraphVertex rightVertex = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).right;
-
-                    if (deletionCase == DeletionCase.case1) {
-
-                        if (((VerticalSeamGraphVertexNonEndpoint) prevVertex).right != null) {
-
-                            (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).right)).leftEdge.from = (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottomLeft));
-
-                            (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).right)).bottomLeft = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottomLeft;
-
-                            (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).right)).bottomEdge.from = (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottom));
-
-                            (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).right)).bottom = (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottom));
-
-                            (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).right)).left = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).left;
-                        }
-
-                        if (((VerticalSeamGraphVertexNonEndpoint) prevVertex).left != null) {
-
-                            (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).left)).right = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).right;
-
-                        }
-
-                    } else if (deletionCase == DeletionCase.case2) {
-
-                        if (((VerticalSeamGraphVertexNonEndpoint) prevVertex).right != null) {
-
-                            ((VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) prevVertex).right)).leftEdge.from = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottomLeft;
-
-                            ((VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) prevVertex).right)).bottomLeft = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottomLeft;
-
-                            ((VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) prevVertex).right)).left = ((VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) prevVertex).left));
-
-                        }
-
-                        if (((VerticalSeamGraphVertexNonEndpoint) prevVertex).left != null) {
-
-                            ((VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) prevVertex).left)).rightEdge.from = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottomRight;
-
-                            ((VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) prevVertex).left)).bottomRight = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottomRight;
-
-                            ((VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) prevVertex).left)).right = ((VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) prevVertex).right));
-
-                        }
-
-
-                    } else { // case3
-
-                        if (((VerticalSeamGraphVertexNonEndpoint) prevVertex).right != null) {
-
-                            (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).right)).left = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).left;
-
-                        }
-
-                        if (((VerticalSeamGraphVertexNonEndpoint) prevVertex).left != null) {
-
-                            (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).left)).rightEdge.from = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottomRight;
-
-                            (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).left)).bottomRight = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottomRight;
-
-                            (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).left)).bottomEdge.from = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottom;
-
-                            (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).left)).bottom = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottom;
-
-                            (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).left)).right = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).right;
-
-                        }
-
-                    }
-
-                    recomputeEnergy(prevVertex);
-
-                    // set prevVertex pointer
-                    prevVertex = currVertex;
-
-                }
-
-                // todo: handle case where currVertex is the sink
-
-                if (((VerticalSeamGraphVertexNonEndpoint) prevVertex).left != null) {
-
-                    ((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).left).right != ((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).right;
-
-                }
-
-                if (((VerticalSeamGraphVertexNonEndpoint) prevVertex).right != null) {
-
-                    ((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).right).left != ((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).left;
-
-                }
-
-                // todo: remove vertex from left parent list of the sink???
-
-                recomputeEnergy(prevVertex);
-
-            } catch(Exception e) { // todo remove exception handling
-                e.printStackTrace();
-            }
-        }
     }
 
     public List<Integer> findVerticalSeam(double[][] energies) {

@@ -5,7 +5,7 @@ import edu.princeton.cs.algs4.Picture;
  */
 public class ShowEnergy {
     public static void main(String[] args) {
-        Picture picture = PictureUtils.loadPicture("HJoceanSmall.png");
+        Picture picture = PictureUtils.loadPicture("small iamge 1");
         SeamCarver sc = new SeamCarver(picture,
             new DualGradientEnergyFunction(),
             new DijkstraSeamFinder());
