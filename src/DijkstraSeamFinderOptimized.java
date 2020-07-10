@@ -379,174 +379,196 @@ public class DijkstraSeamFinderOptimized {
         public Collection<Edge<VerticalSeamGraphVertex>> outgoingEdgesFrom(VerticalSeamGraphVertex v) {
             return v.edgeList;
         }
-        // todo: take care of the vertices above a given vertex being deleted?
 
+        // will always be passed in an arrayList
         public void removeSeam(List<Integer> lastSeam) {
-            try {
 
-                if (verticalSeamGraph == null) {
-                    throw new Exception("Error, the Vertical Seam Graph has not been initialized!");
-                }
-
-                // only delete vertices which are adjacent to the recently found seam
-                VerticalSeamGraphVertex prevVertex = verticalSeamGraph.start.edgeList.get(lastSeam.get(0)).to; // (currVertex and prevVertex as used to traverse the iamge)
-                VerticalSeamGraphVertex currVertex = null;
-
-                for (int i = 1; i < lastSeam.size(); ++i) {
-
-                    int i1 = lastSeam.get(i - 1);
-                    int i2 = lastSeam.get(i);
-
-                    DeletionCase deletionCase;
-
-                    if (i1 < i2) {
-                        currVertex = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottomRight;
-                        deletionCase = DeletionCase.case1;
-                    } else if (i1 > i2) {
-                        currVertex = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottomLeft;
-                        deletionCase = DeletionCase.case3;
-                    } else {
-                        currVertex = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottom;
-                        deletionCase = DeletionCase.case2;
-                    }
-
-                    VerticalSeamGraphVertex leftVertex = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).left;
-                    VerticalSeamGraphVertex rightVertex = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).right;
-
-                    if (deletionCase == DeletionCase.case1) {
-
-                        if (((VerticalSeamGraphVertexNonEndpoint) prevVertex).right != null) {
-
-                            (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).right)).leftEdge.from = (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottomLeft));
-
-                            (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).right)).bottomLeft = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottomLeft;
-
-                            (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).right)).bottomEdge.from = (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottom));
-
-                            (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).right)).bottom = (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottom));
-
-                            (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).right)).left = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).left;
-                        }
-
-                        if (((VerticalSeamGraphVertexNonEndpoint) prevVertex).left != null) {
-
-                            (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).left)).right = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).right;
-
-                        }
-
-                        if (((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottomLeft != null) {
-
-                            ((VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottomLeft)).topRight = ((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex)).right;
-
-                        }
-
-                        if (((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottom != null) {
-
-                            ((VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottom)).top = (VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).top;
-
-                        }
-
-                        if (if (((VerticalSeamGraphVertexNonEndpoint) prevVertex).topLeft != null) {
-
-                            ((VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottom)).top = (VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).top;
-
-                        })
-
-                    } else if (deletionCase == DeletionCase.case2) {
-
-                        if (((VerticalSeamGraphVertexNonEndpoint) prevVertex).right != null) {
-
-                            ((VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) prevVertex).right)).leftEdge.from = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottomLeft;
-
-                            ((VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) prevVertex).right)).bottomLeft = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottomLeft;
-
-                            ((VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) prevVertex).right)).left = ((VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) prevVertex).left));
-
-                        }
-
-                        if (((VerticalSeamGraphVertexNonEndpoint) prevVertex).left != null) {
-
-                            ((VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) prevVertex).left)).rightEdge.from = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottomRight;
-
-                            ((VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) prevVertex).left)).bottomRight = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottomRight;
-
-                            ((VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) prevVertex).left)).right = ((VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) prevVertex).right));
-
-                        }
-
-
-                    } else { // case3
-
-                        if (((VerticalSeamGraphVertexNonEndpoint) prevVertex).right != null) {
-
-                            (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).right)).left = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).left;
-
-                        }
-
-                        if (((VerticalSeamGraphVertexNonEndpoint) prevVertex).left != null) {
-
-                            (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).left)).rightEdge.from = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottomRight;
-
-                            (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).left)).bottomRight = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottomRight;
-
-                            (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).left)).bottomEdge.from = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottom;
-
-                            (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).left)).bottom = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottom;
-
-                            (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).left)).right = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).right;
-
-                        }
-
-                        if (((VerticalSeamGraphVertexNonEndpoint) prevVertex).left != null) {
-
-                            (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).left)).right = ((VerticalSeamGraphVertexNonEndpoint) prevVertex).right;
-
-                        }
-
-                        if (((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottomRight != null) {
-
-                            ((VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottomRight)).topLeft = (VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).left;
-
-                        }
-
-                        if (((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottom != null) {
-
-                            ((VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) prevVertex).bottom)).top = (VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).top;
-
-                        }
-
-                    }
-
-                    computeEnergy((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).left);
-
-                    computeEnergy((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).right);
-
-                    // set prevVertex pointer
-                    prevVertex = currVertex;
-
-                }
-
-                // todo: handle case where currVertex is the sink
-
-                if (((VerticalSeamGraphVertexNonEndpoint) prevVertex).left != null) {
-
-                    ((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).left).right = (VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).right;
-
-                }
-
-                if (((VerticalSeamGraphVertexNonEndpoint) prevVertex).right != null) {
-
-                    ((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).right).left = (VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) prevVertex).left;
-
-                }
-
-                computeEnergy((VerticalSeamGraphVertexNonEndpoint) prevVertex);
-
-            } catch (Exception e) { // todo remove exception handling
-                e.printStackTrace();
+            if (verticalSeamGraph == null) {
+                System.out.println("Internal error, the VerticalSeamGraph has not been initialized!\"");
+                System.exit(1);
             }
 
+            VerticalSeamGraphVertex v = verticalSeamGraph.start.edgeList.get(lastSeam.get(0)).to; // (currVertex and prevVertex as used to traverse the iamge)
+            DeletionCase deletionCase;
+
+            if (!(((VerticalSeamGraphVertexNonEndpoint) v).top).isSource) {
+                System.out.println("Internal system error, expected v.top to be the source for the seam's first vertex");
+                System.exit(1);
+            }
+
+            (((VerticalSeamGraphVertexNonEndpoint) v).top).edgeList.remove(lastSeam.get(0)); // remove the edge from the source
+
+            for (int i = 1; i < lastSeam.size(); ++i) {
+                int i1 = lastSeam.get(i-1);
+                int i2 = lastSeam.get(i);
+
+                if (i1 < i2) {
+                    v = ((VerticalSeamGraphVertexNonEndpoint) v).bottomRight;
+                    deletionCase = DeletionCase.case1;
+                } else if (i1 > i2) {
+                    v = ((VerticalSeamGraphVertexNonEndpoint) v).bottomLeft;
+                    deletionCase = DeletionCase.case3;
+                } else {
+                    v = ((VerticalSeamGraphVertexNonEndpoint) v).bottom;
+                    deletionCase = DeletionCase.case2;
+                }
+
+                VerticalSeamGraphVertex leftVertex = ((VerticalSeamGraphVertexNonEndpoint) v).left;
+                VerticalSeamGraphVertex rightVertex = ((VerticalSeamGraphVertexNonEndpoint) v).right;
+
+                if (((VerticalSeamGraphVertexNonEndpoint) v).topLeft != null) {
+                    VerticalSeamGraphVertex topLeft = ((VerticalSeamGraphVertexNonEndpoint) v).topLeft;
+                    if (topLeft != null && deletionCase != DeletionCase.case1) {
+                        ((VerticalSeamGraphVertexNonEndpoint) topLeft).rightEdge.from = ((VerticalSeamGraphVertexNonEndpoint) v).right;
+                    }
+                }
+
+                if (((VerticalSeamGraphVertexNonEndpoint) v).topRight != null) {
+                    VerticalSeamGraphVertex topRight = ((VerticalSeamGraphVertexNonEndpoint) v).topRight;
+                    if (topRight != null && deletionCase != DeletionCase.case3) {
+                        ((VerticalSeamGraphVertexNonEndpoint) topRight).leftEdge.from = ((VerticalSeamGraphVertexNonEndpoint) v).left;
+
+                    }
+                }
+
+                if (((VerticalSeamGraphVertexNonEndpoint) v).top != null) {
+                    VerticalSeamGraphVertex top = ((VerticalSeamGraphVertexNonEndpoint) v).top;
+                    if (top != null && deletionCase != DeletionCase.case2) {
+                        if (deletionCase == DeletionCase.case3) {
+                            ((VerticalSeamGraphVertexNonEndpoint) top).bottomEdge.from = ((VerticalSeamGraphVertexNonEndpoint) v).right;
+                            ((VerticalSeamGraphVertexNonEndpoint) top).rightEdge.from = ((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) v).right).right;
+                        } else { // deletionCase  = case1
+                            ((VerticalSeamGraphVertexNonEndpoint) top).bottomEdge.from = ((VerticalSeamGraphVertexNonEndpoint) v).left;
+                            ((VerticalSeamGraphVertexNonEndpoint) top).leftEdge.from = ((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) v).left).left;
+                        }
+                    }
+                }
+            }
+            removeSeamHelper(lastSeam);
+            removeSeamHelper2(lastSeam);
         }
+
+        public void removeSeamHelper(List<Integer> lastSeam) {
+
+            VerticalSeamGraphVertex v = verticalSeamGraph.start.edgeList.get(lastSeam.get(0)).to; // (currVertex and prevVertex as used to traverse the iamge)
+            DeletionCase deletionCase;
+
+            if (!(((VerticalSeamGraphVertexNonEndpoint) v).top).isSource) {
+                System.out.println("Internal system error, expected v.top to be the source for the seam's first vertex");
+                System.exit(1);
+            }
+
+            for (int i = 1; i < lastSeam.size(); ++i) {
+                int i1 = lastSeam.get(i-1);
+                int i2 = lastSeam.get(i);
+
+                if (i1 < i2) {
+                    v = ((VerticalSeamGraphVertexNonEndpoint) v).bottomRight;
+                    deletionCase = DeletionCase.case1;
+                } else if (i1 > i2) {
+                    v = ((VerticalSeamGraphVertexNonEndpoint) v).bottomLeft;
+                    deletionCase = DeletionCase.case3;
+                } else {
+                    v = ((VerticalSeamGraphVertexNonEndpoint) v).bottom;
+                    deletionCase = DeletionCase.case2;
+                }
+
+                VerticalSeamGraphVertex leftVertex = ((VerticalSeamGraphVertexNonEndpoint) v).left;
+                VerticalSeamGraphVertex rightVertex = ((VerticalSeamGraphVertexNonEndpoint) v).right;
+
+                ((VerticalSeamGraphVertexNonEndpoint) leftVertex).right = ((VerticalSeamGraphVertexNonEndpoint) v).right;
+                ((VerticalSeamGraphVertexNonEndpoint) rightVertex).left = ((VerticalSeamGraphVertexNonEndpoint) v).left;
+
+                if (((VerticalSeamGraphVertexNonEndpoint) v).topLeft != null) {
+                    VerticalSeamGraphVertex topLeft = ((VerticalSeamGraphVertexNonEndpoint) v).topLeft;
+                    if (topLeft != null && deletionCase != DeletionCase.case1) {
+                        ((VerticalSeamGraphVertexNonEndpoint) topLeft).bottomRight = ((VerticalSeamGraphVertexNonEndpoint) topLeft).rightEdge.from;
+                    }
+                }
+
+                if (((VerticalSeamGraphVertexNonEndpoint) v).topRight != null) {
+                    VerticalSeamGraphVertex topRight = ((VerticalSeamGraphVertexNonEndpoint) v).topRight;
+                    if (topRight != null && deletionCase != DeletionCase.case3) {
+                        ((VerticalSeamGraphVertexNonEndpoint) topRight).bottomLeft = ((VerticalSeamGraphVertexNonEndpoint) topRight).leftEdge.from;
+                    }
+                }
+
+                if (((VerticalSeamGraphVertexNonEndpoint) v).top != null) {
+                    VerticalSeamGraphVertex top = ((VerticalSeamGraphVertexNonEndpoint) v).top;
+                    if (top != null && deletionCase != DeletionCase.case2) {
+                        if (deletionCase == DeletionCase.case3) {
+                            ((VerticalSeamGraphVertexNonEndpoint) top).bottom = ((VerticalSeamGraphVertexNonEndpoint) top).bottomEdge.from;
+                            ((VerticalSeamGraphVertexNonEndpoint) top).bottomRight = ((VerticalSeamGraphVertexNonEndpoint) top).rightEdge.from;
+                        } else { // deletionCase  = case1
+                            ((VerticalSeamGraphVertexNonEndpoint) top).bottom = ((VerticalSeamGraphVertexNonEndpoint) top).bottomEdge.from;
+                            ((VerticalSeamGraphVertexNonEndpoint) top).bottomLeft = ((VerticalSeamGraphVertexNonEndpoint) top).leftEdge.from;
+                        }
+                    }
+                }
+
+            }
+        }
+
+        public void removeSeamHelper2(List<Integer> lastSeam) {
+
+            VerticalSeamGraphVertex v = verticalSeamGraph.start.edgeList.get(lastSeam.get(0)).to; // (currVertex and prevVertex as used to traverse the iamge)
+            DeletionCase deletionCase;
+
+            if (!(((VerticalSeamGraphVertexNonEndpoint) v).top).isSource) {
+                System.out.println("Internal system error, expected v.top to be the source for the seam's first vertex");
+                System.exit(1);
+            }
+
+            for (int i = 1; i < lastSeam.size(); ++i) {
+                int i1 = lastSeam.get(i-1);
+                int i2 = lastSeam.get(i);
+
+                if (i1 < i2) {
+                    v = ((VerticalSeamGraphVertexNonEndpoint) v).bottomRight;
+                    deletionCase = DeletionCase.case1;
+                } else if (i1 > i2) {
+                    v = ((VerticalSeamGraphVertexNonEndpoint) v).bottomLeft;
+                    deletionCase = DeletionCase.case3;
+                } else {
+                    v = ((VerticalSeamGraphVertexNonEndpoint) v).bottom;
+                    deletionCase = DeletionCase.case2;
+                }
+
+                VerticalSeamGraphVertex leftVertex = ((VerticalSeamGraphVertexNonEndpoint) v).left;
+                VerticalSeamGraphVertex rightVertex = ((VerticalSeamGraphVertexNonEndpoint) v).right;
+
+                if (((VerticalSeamGraphVertexNonEndpoint) v).topLeft != null) {
+                    VerticalSeamGraphVertex topLeft = ((VerticalSeamGraphVertexNonEndpoint) v).topLeft;
+                    if (topLeft != null && deletionCase != DeletionCase.case1) {
+                        ((VerticalSeamGraphVertexNonEndpoint) topLeft).bottomRight = ((VerticalSeamGraphVertexNonEndpoint) topLeft).rightEdge.from;
+                    }
+                }
+
+                if (((VerticalSeamGraphVertexNonEndpoint) v).topRight != null) {
+                    VerticalSeamGraphVertex topRight = ((VerticalSeamGraphVertexNonEndpoint) v).topRight;
+                    if (topRight != null && deletionCase != DeletionCase.case3) {
+                        ((VerticalSeamGraphVertexNonEndpoint) topRight).bottomLeft = ((VerticalSeamGraphVertexNonEndpoint) topRight).leftEdge.from;
+                    }
+                }
+
+                if (((VerticalSeamGraphVertexNonEndpoint) v).top != null) {
+                    VerticalSeamGraphVertex top = ((VerticalSeamGraphVertexNonEndpoint) v).top;
+                    if (top != null && deletionCase != DeletionCase.case2) {
+                        if (deletionCase == DeletionCase.case3) {
+                            ((VerticalSeamGraphVertexNonEndpoint) top).bottom = ((VerticalSeamGraphVertexNonEndpoint) top).bottomEdge.from;
+                            ((VerticalSeamGraphVertexNonEndpoint) top).bottomRight = ((VerticalSeamGraphVertexNonEndpoint) top).rightEdge.from;
+                        } else { // deletionCase  = case1
+                            ((VerticalSeamGraphVertexNonEndpoint) top).bottom = ((VerticalSeamGraphVertexNonEndpoint) top).bottomEdge.from;
+                            ((VerticalSeamGraphVertexNonEndpoint) top).bottomLeft = ((VerticalSeamGraphVertexNonEndpoint) top).leftEdge.from;
+                        }
+                    }
+                }
+
+            }
+        }
+
+
+
 
     }
 
