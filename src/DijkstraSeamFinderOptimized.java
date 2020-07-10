@@ -1,15 +1,9 @@
-
 import edu.princeton.cs.algs4.Picture;
-
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.function.BiFunction;
 import java.util.function.Function;
-
-import edu.princeton.cs.algs4.Picture;
+import java.util.concurrent.ThreadLocalRandom;
 
 enum DifferenceType {
     CentralDifference, ForwardDifference, BackwardDifference;
@@ -91,6 +85,17 @@ class VerticalSeamGraphVertex extends SeamGraphVertex {
     public boolean equals(VerticalSeamGraphVertex v) {
         return (this.coord.x == v.coord.x && this.coord.y == v.coord.y);
     }
+
+    public static boolean checkEquality(VerticalSeamGraphVertex v1, VerticalSeamGraphVertex v2) {
+        if (v1 == null) {
+            return (v2 == null);
+        } else if (v2 == null) {
+            return v1 == null;
+        } else { // neither is null
+            return v1.equals(v2);
+        }
+    }
+
 }
 
 // if the vertex resides at the bottom of the image, only it's bottomEdge is non-null
@@ -427,7 +432,6 @@ public class DijkstraSeamFinderOptimized {
                     VerticalSeamGraphVertex topRight = ((VerticalSeamGraphVertexNonEndpoint) v).topRight;
                     if (topRight != null && deletionCase != DeletionCase.case3) {
                         ((VerticalSeamGraphVertexNonEndpoint) topRight).leftEdge.from = ((VerticalSeamGraphVertexNonEndpoint) v).left;
-
                     }
                 }
 
@@ -437,15 +441,18 @@ public class DijkstraSeamFinderOptimized {
                         if (deletionCase == DeletionCase.case3) {
                             ((VerticalSeamGraphVertexNonEndpoint) top).bottomEdge.from = ((VerticalSeamGraphVertexNonEndpoint) v).right;
                             ((VerticalSeamGraphVertexNonEndpoint) top).rightEdge.from = ((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) v).right).right;
+
                         } else { // deletionCase  = case1
                             ((VerticalSeamGraphVertexNonEndpoint) top).bottomEdge.from = ((VerticalSeamGraphVertexNonEndpoint) v).left;
                             ((VerticalSeamGraphVertexNonEndpoint) top).leftEdge.from = ((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) v).left).left;
+
                         }
                     }
                 }
             }
             removeSeamHelper(lastSeam);
             removeSeamHelper2(lastSeam);
+            recomputeEnergiesOfVerticalSeamGraph(lastSeam);
         }
 
         public void removeSeamHelper(List<Integer> lastSeam) {
@@ -540,14 +547,18 @@ public class DijkstraSeamFinderOptimized {
                 if (((VerticalSeamGraphVertexNonEndpoint) v).topLeft != null) {
                     VerticalSeamGraphVertex topLeft = ((VerticalSeamGraphVertexNonEndpoint) v).topLeft;
                     if (topLeft != null && deletionCase != DeletionCase.case1) {
-                        ((VerticalSeamGraphVertexNonEndpoint) topLeft).bottomRight = ((VerticalSeamGraphVertexNonEndpoint) topLeft).rightEdge.from;
+                        if (((VerticalSeamGraphVertexNonEndpoint) topLeft).bottomRight != null) {
+                            (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) topLeft).bottomRight).topLeft = (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) topLeft);
+                        }
                     }
                 }
 
                 if (((VerticalSeamGraphVertexNonEndpoint) v).topRight != null) {
                     VerticalSeamGraphVertex topRight = ((VerticalSeamGraphVertexNonEndpoint) v).topRight;
                     if (topRight != null && deletionCase != DeletionCase.case3) {
-                        ((VerticalSeamGraphVertexNonEndpoint) topRight).bottomLeft = ((VerticalSeamGraphVertexNonEndpoint) topRight).leftEdge.from;
+                        if (((VerticalSeamGraphVertexNonEndpoint) topRight).bottomLeft != null) {
+                            (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) topRight).bottomLeft).topRight = (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) topRight);
+                        }
                     }
                 }
 
@@ -555,14 +566,62 @@ public class DijkstraSeamFinderOptimized {
                     VerticalSeamGraphVertex top = ((VerticalSeamGraphVertexNonEndpoint) v).top;
                     if (top != null && deletionCase != DeletionCase.case2) {
                         if (deletionCase == DeletionCase.case3) {
-                            ((VerticalSeamGraphVertexNonEndpoint) top).bottom = ((VerticalSeamGraphVertexNonEndpoint) top).bottomEdge.from;
-                            ((VerticalSeamGraphVertexNonEndpoint) top).bottomRight = ((VerticalSeamGraphVertexNonEndpoint) top).rightEdge.from;
+
+                            if (((VerticalSeamGraphVertexNonEndpoint) top).bottom != null) {
+                                ((VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) top).bottom)).top = top;
+                            }
+
+                            if (((VerticalSeamGraphVertexNonEndpoint) top).bottomRight != null) {
+                                ((VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) top).bottomRight)).topLeft = top;
+                            }
+
                         } else { // deletionCase  = case1
-                            ((VerticalSeamGraphVertexNonEndpoint) top).bottom = ((VerticalSeamGraphVertexNonEndpoint) top).bottomEdge.from;
-                            ((VerticalSeamGraphVertexNonEndpoint) top).bottomLeft = ((VerticalSeamGraphVertexNonEndpoint) top).leftEdge.from;
+
+                            if (((VerticalSeamGraphVertexNonEndpoint) top).bottom != null) {
+                                ((VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) top).bottom)).top = top;
+                            }
+
+                            if (((VerticalSeamGraphVertexNonEndpoint) top).bottomLeft != null) {
+                                ((VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) top).bottomLeft)).topRight = top;
+                            }
+
                         }
                     }
                 }
+
+            }
+        }
+
+        public void recomputeEnergiesOfVerticalSeamGraph(List<Integer> lastSeam) {
+            VerticalSeamGraphVertex v = verticalSeamGraph.start.edgeList.get(lastSeam.get(0)).to; // (currVertex and prevVertex as used to traverse the iamge)
+            DeletionCase deletionCase;
+
+            if (!(((VerticalSeamGraphVertexNonEndpoint) v).top).isSource) {
+                System.out.println("Internal system error, expected v.top to be the source for the seam's first vertex");
+                System.exit(1);
+            }
+
+            (((VerticalSeamGraphVertexNonEndpoint) v).top).edgeList.remove(lastSeam.get(0)); // remove the edge from the source
+            computeEnergy((VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) v).left));
+            computeEnergy((VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) v).right));
+
+            for (int i = 1; i < lastSeam.size(); ++i) {
+                int i1 = lastSeam.get(i - 1);
+                int i2 = lastSeam.get(i);
+
+                if (i1 < i2) {
+                    v = ((VerticalSeamGraphVertexNonEndpoint) v).bottomRight;
+                    deletionCase = DeletionCase.case1;
+                } else if (i1 > i2) {
+                    v = ((VerticalSeamGraphVertexNonEndpoint) v).bottomLeft;
+                    deletionCase = DeletionCase.case3;
+                } else {
+                    v = ((VerticalSeamGraphVertexNonEndpoint) v).bottom;
+                    deletionCase = DeletionCase.case2;
+                }
+
+                computeEnergy((VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) v).left));
+                computeEnergy((VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) v).right));
 
             }
         }
@@ -582,7 +641,6 @@ public class DijkstraSeamFinderOptimized {
 
         List<Integer> ret = new ArrayList<>();
 
-
         DijkstraShortestPathFinder<Graph<VerticalSeamGraphVertex, Edge<VerticalSeamGraphVertex>>, VerticalSeamGraphVertex, Edge<VerticalSeamGraphVertex>> pf;
         pf = new DijkstraShortestPathFinder<>();
         ShortestPath<VerticalSeamGraphVertex, Edge<VerticalSeamGraphVertex>> sp;
@@ -600,6 +658,69 @@ public class DijkstraSeamFinderOptimized {
 
         return ret;
     }
+
+    // for testing purposes
+    public List<Integer> generateRandomVerticalSeam() {
+
+        assert(verticalSeamGraph.numHorizVertices > 1 && verticalSeamGraph.numVertVertices > 1);
+
+        List<Integer> seam = new ArrayList<>();
+
+        double lowThreshold = 1/3;
+        double highThreshold = 2/3;
+        double middleThreshold = 1/2;
+
+        boolean onLeftSide = false;
+        boolean onRightSide = false;
+
+        int min = 0;
+        int max = verticalSeamGraph.numHorizVertices-1;
+
+        int val = ThreadLocalRandom.current().nextInt(min, max + 1);
+        int prevVal = val;
+
+        for (int i=0; i<verticalSeamGraph.numVertVertices; ++i) {
+
+            double x = Math.random();
+
+            if (onLeftSide) {
+                if (x <= middleThreshold) {
+                    val = prevVal;
+                } else {
+                    val = prevVal + 1;
+                    onLeftSide = false;
+                }
+            } else if (onRightSide){
+                if (x <= middleThreshold) {
+                    val = prevVal - 1;
+                    onRightSide = false;
+                } else {
+                    val = prevVal;
+                }
+            } else {
+                if (x < lowThreshold) {
+                    val = prevVal - 1;
+                } else if (lowThreshold <= x && x < highThreshold) {
+                    val = prevVal;
+                } else { // highThreshold <= x
+                    val = prevVal + 1;
+                }
+            }
+
+            if (val == verticalSeamGraph.numHorizVertices - 1) {
+                onRightSide = true;
+            }
+
+            if (val == 0) {
+                onLeftSide = true;
+            }
+
+            seam.add(val);
+        }
+
+        return seam;
+    }
+
 
 
 }
