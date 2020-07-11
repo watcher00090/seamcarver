@@ -110,6 +110,7 @@ class VerticalSeamGraphVertexNonEndpoint extends VerticalSeamGraphVertex {
     public VerticalSeamGraphVertex bottom = null;
     public VerticalSeamGraphVertex bottomRight = null;
 
+    // if an edge is non null, both it's 'from' and 'to' vertices will be non-null
     public Edge<VerticalSeamGraphVertex> leftEdge;
     public Edge<VerticalSeamGraphVertex> bottomEdge;
     public Edge<VerticalSeamGraphVertex> rightEdge;
@@ -118,9 +119,6 @@ class VerticalSeamGraphVertexNonEndpoint extends VerticalSeamGraphVertex {
 
     public VerticalSeamGraphVertexNonEndpoint(Pair<Integer> coord, int rgb) {
         super(coord);
-        leftEdge = new Edge<VerticalSeamGraphVertex>(null, null,0);
-        bottomEdge = new Edge<VerticalSeamGraphVertex>(null, null,0);
-        rightEdge = new Edge<VerticalSeamGraphVertex>(null, null,0);
         isSource = false;
         isSink = false;
     }
@@ -316,6 +314,7 @@ public class DijkstraSeamFinderOptimized {
 
                         currRow[x] = new VerticalSeamGraphVertexNonEndpoint(new Pair<Integer>(x, y), picture.getRGB(x, y));
                         currRow[x].bottomEdge = new Edge<VerticalSeamGraphVertex>(currRow[x], end, energyOfPixel(x, y));
+                        currRow[x].bottom = end;
                         //prevRow[x].edgeList.add(prevRow[x].bottomEdge);
 
                     } else {
@@ -340,14 +339,14 @@ public class DijkstraSeamFinderOptimized {
                         currRow[x].edgeList.add(currRow[x].bottomEdge);
                         currRow[x].edgeList.add(currRow[x].rightEdge);
 
-                        if (x > 0) {
-                            currRow[x].left = currRow[x - 1];
-                            currRow[x - 1].right = currRow[x];
-                        }
-
                         currRow[x].bottom = prevRow[x];
                         prevRow[x].top = currRow[x];
 
+                    }
+
+                    if (x > 0) {
+                        currRow[x].left = currRow[x - 1];
+                        currRow[x - 1].right = currRow[x];
                     }
 
                 }

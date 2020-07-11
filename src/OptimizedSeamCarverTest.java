@@ -46,7 +46,7 @@ public class OptimizedSeamCarverTest {
                     return false;
                 }
 
-                if (v.bottomEdge != null && !(v.bottomEdge.to.coord.y - 1 == v.coord.y)) {
+                if (v.bottomEdge != null && !(((VerticalSeamGraphVertexNonEndpoint) v).bottom).isSink && !(v.bottomEdge.to.coord.y - 1 == v.coord.y)) {
                     return false;
                 }
 
@@ -54,18 +54,15 @@ public class OptimizedSeamCarverTest {
                     return false;
                 }
 
-                curs = ((VerticalSeamGraphVertexNonEndpoint) curs).right;
-
             }
             curs = ((VerticalSeamGraphVertexNonEndpoint) start).bottom;
         }
         return true;
     }
 
-
     public boolean checkThatNeighborsHaveCorrectCoordinates(DijkstraSeamFinderOptimized.VerticalSeamGraphOptimized G) {
         for (Edge<VerticalSeamGraphVertex> e : ((VerticalSeamGraphVertexSource) G.start).edgeList) {
-            if (((VerticalSeamGraphVertexNonEndpoint) e.from).top.equals(e.to)) {
+            if (!((VerticalSeamGraphVertexNonEndpoint) e.to).top.equals(e.from)) {
                 return false;
             }
         }
@@ -88,7 +85,7 @@ public class OptimizedSeamCarverTest {
                 VerticalSeamGraphVertex leftVertex = v.left;
                 VerticalSeamGraphVertex rightVertex = v.right;
 
-                if (topVertex != null && !(topVertex.coord.y + 1 == v.coord.y)) {
+                if (topVertex != null && !topVertex.isSink && !(topVertex.coord.y + 1 == v.coord.y)) {
                     return false;
                 }
 
@@ -105,7 +102,7 @@ public class OptimizedSeamCarverTest {
                     return false;
                 }
 
-                if (bottomVertex != null && !(bottomVertex.coord.y - 1 == v.coord.y)) {
+                if (bottomVertex != null && !(bottomVertex.isSink) && !(bottomVertex.coord.y - 1 == v.coord.y)) {
                     return false;
                 }
 
@@ -117,7 +114,7 @@ public class OptimizedSeamCarverTest {
                     return false;
                 }
 
-                if (rightVertex != null && rightVertex.coord.x - 1 == v.coord.x) {
+                if (rightVertex != null && !(rightVertex.coord.x - 1 == v.coord.x)) {
                     return false;
                 }
 
@@ -153,13 +150,21 @@ public class OptimizedSeamCarverTest {
     }
 
     @Test
-    public void checkThatTheVerticalSeamGraphIsSetUpCorrectly() {
+    public void checkThatInTheVerticalSeamGraphsLowerEdgesAreSetUpCorrectly() {
         Picture picture = PictureUtils.loadPicture("small_image_1.png");
         double[][] energies = SeamCarver.computeEnergies(picture, new DualGradientEnergyFunction());
         DijkstraSeamFinderOptimized sf = new DijkstraSeamFinderOptimized(picture, energies);
         assertEquals(true,checkThatEdgeEndpointsHaveCorrectCoordinates(sf.verticalSeamGraph));
+    }
+
+    @Test
+    public void checkThatInTheVerticalSeamGraphNeighborsHaveCorrectCoordinates() {
+        Picture picture = PictureUtils.loadPicture("small_image_1.png");
+        double[][] energies = SeamCarver.computeEnergies(picture, new DualGradientEnergyFunction());
+        DijkstraSeamFinderOptimized sf = new DijkstraSeamFinderOptimized(picture, energies);
         assertEquals(true,checkThatNeighborsHaveCorrectCoordinates(sf.verticalSeamGraph));
     }
+
 
     @Test
     public void verticalSeamGraphConstructorTest() {
