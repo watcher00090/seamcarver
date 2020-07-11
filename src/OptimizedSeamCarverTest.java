@@ -167,31 +167,34 @@ public class OptimizedSeamCarverTest {
 
 
     @Test
-    public void verticalSeamGraphConstructorTest() {
+    public void verticalSeamGraphProducesCorrectPicturesUponRequest() {
         verticalSeamGraphConstructorTestImage1();
         verticalSeamGraphConstructorTestImage2();
         verticalSeamGraphConstructorTestImage3();
     }
 
     public void verticalSeamGraphConstructorTestImage1() {
-        Picture picture = PictureUtils.loadPicture("small image 1");
+        Picture picture = PictureUtils.loadPicture("small_image_1.png");
         double[][] energies = SeamCarver.computeEnergies(picture, new DualGradientEnergyFunction());
         DijkstraSeamFinderOptimized sf = new DijkstraSeamFinderOptimized(picture, energies);
-        assertEquals(picture, sf.verticalSeamGraph.toPicture().equals(picture));
+        Picture picture2 =  sf.verticalSeamGraph.toPicture();
+        assertEquals(picture, picture2);
     }
 
     public void verticalSeamGraphConstructorTestImage2() {
-        Picture picture = PictureUtils.loadPicture("small image 2");
+        Picture picture = PictureUtils.loadPicture("small_image_2.png");
         double[][] energies = SeamCarver.computeEnergies(picture, new DualGradientEnergyFunction());
         DijkstraSeamFinderOptimized sf = new DijkstraSeamFinderOptimized(picture, energies);
-        assertEquals(picture, sf.verticalSeamGraph.toPicture().equals(picture));
+        Picture picture2 =  sf.verticalSeamGraph.toPicture();
+        assertEquals(picture, picture2);
     }
 
     public void verticalSeamGraphConstructorTestImage3() {
-        Picture picture = PictureUtils.loadPicture("small image 3");
+        Picture picture = PictureUtils.loadPicture("small_image_3.png");
         double[][] energies = SeamCarver.computeEnergies(picture, new DualGradientEnergyFunction());
         DijkstraSeamFinderOptimized sf = new DijkstraSeamFinderOptimized(picture, energies);
-        assertEquals(picture, sf.verticalSeamGraph.toPicture().equals(picture));
+        Picture picture2 =  sf.verticalSeamGraph.toPicture();
+        assertEquals(picture, picture2);
     }
 
 

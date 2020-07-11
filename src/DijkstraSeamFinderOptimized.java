@@ -121,6 +121,7 @@ class VerticalSeamGraphVertexNonEndpoint extends VerticalSeamGraphVertex {
         super(coord);
         isSource = false;
         isSink = false;
+        this.rgb = rgb;
     }
 
     // todo: pass in rgb from the picture when creating this vertex
