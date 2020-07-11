@@ -9,7 +9,7 @@ import java.util.List;
  *  Some utility functions for testing SeamCarver.
  */
 public class PictureUtils {
-    public static final Path IMAGE_DIR = Path.of("./data");
+    public static final Path IMAGE_DIR = Path.of("data");
 
     public static Picture loadPicture(String filename) {
         return new Picture(IMAGE_DIR.resolve(filename).toFile());

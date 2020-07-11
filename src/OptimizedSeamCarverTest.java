@@ -1,6 +1,11 @@
 import edu.princeton.cs.algs4.Picture;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.ThrowingSupplier;
 
+import java.io.File;
+import java.io.IOException;
+
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class OptimizedSeamCarverTest {
@@ -125,14 +130,65 @@ public class OptimizedSeamCarverTest {
         return true;
     }
 
+    public class InfrastructureTester implements ThrowingSupplier<Object> {
+        public InfrastructureTester() {
+            Picture picture = PictureUtils.loadPicture("small_image_1.png");
+            double[][] energies = SeamCarver.computeEnergies(picture, new DualGradientEnergyFunction());
+            DijkstraSeamFinderOptimized sf = new DijkstraSeamFinderOptimized(picture, energies);
+        }
+
+        public Object get() {
+            return new Object();
+        }
+    }
+
     @Test
     public void infrastructureTest() {
-        Picture picture = PictureUtils.loadPicture("small image 1");
+        try {
+            System.out.println(new File(".").getCanonicalPath());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        assertDoesNotThrow(new InfrastructureTester());
+    }
+
+    @Test
+    public void checkThatTheVerticalSeamGraphIsSetUpCorrectly() {
+        Picture picture = PictureUtils.loadPicture("small_image_1.png");
         double[][] energies = SeamCarver.computeEnergies(picture, new DualGradientEnergyFunction());
         DijkstraSeamFinderOptimized sf = new DijkstraSeamFinderOptimized(picture, energies);
         assertEquals(true,checkThatEdgeEndpointsHaveCorrectCoordinates(sf.verticalSeamGraph));
         assertEquals(true,checkThatNeighborsHaveCorrectCoordinates(sf.verticalSeamGraph));
     }
+
+    @Test
+    public void verticalSeamGraphConstructorTest() {
+        verticalSeamGraphConstructorTestImage1();
+        verticalSeamGraphConstructorTestImage2();
+        verticalSeamGraphConstructorTestImage3();
+    }
+
+    public void verticalSeamGraphConstructorTestImage1() {
+        Picture picture = PictureUtils.loadPicture("small image 1");
+        double[][] energies = SeamCarver.computeEnergies(picture, new DualGradientEnergyFunction());
+        DijkstraSeamFinderOptimized sf = new DijkstraSeamFinderOptimized(picture, energies);
+        assertEquals(picture, sf.verticalSeamGraph.toPicture().equals(picture));
+    }
+
+    public void verticalSeamGraphConstructorTestImage2() {
+        Picture picture = PictureUtils.loadPicture("small image 2");
+        double[][] energies = SeamCarver.computeEnergies(picture, new DualGradientEnergyFunction());
+        DijkstraSeamFinderOptimized sf = new DijkstraSeamFinderOptimized(picture, energies);
+        assertEquals(picture, sf.verticalSeamGraph.toPicture().equals(picture));
+    }
+
+    public void verticalSeamGraphConstructorTestImage3() {
+        Picture picture = PictureUtils.loadPicture("small image 3");
+        double[][] energies = SeamCarver.computeEnergies(picture, new DualGradientEnergyFunction());
+        DijkstraSeamFinderOptimized sf = new DijkstraSeamFinderOptimized(picture, energies);
+        assertEquals(picture, sf.verticalSeamGraph.toPicture().equals(picture));
+    }
+
 
     @Test
     public void testForVerticalSeamGraphThatTheNeighborsHaveCorrectCoordinates() {

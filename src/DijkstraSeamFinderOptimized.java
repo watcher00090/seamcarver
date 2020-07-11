@@ -80,6 +80,7 @@ class VerticalSeamGraphVertex extends SeamGraphVertex {
 
     public VerticalSeamGraphVertex() {
         super();
+        this.edgeList = new ArrayList<>();
     }
 
     public boolean equals(VerticalSeamGraphVertex v) {
@@ -309,11 +310,11 @@ public class DijkstraSeamFinderOptimized {
             VerticalSeamGraphVertexNonEndpoint prevRow[] = new VerticalSeamGraphVertexNonEndpoint[numHorizVertices];
             VerticalSeamGraphVertexNonEndpoint currRow[] = new VerticalSeamGraphVertexNonEndpoint[numHorizVertices];
 
-            for (int y = energies.length - 1; y > -1; y--) {
+            for (int y = numVertVertices - 1; y > -1; y--) {
 
-                for (int x = 0; x < energies[0].length; ++x) {
+                for (int x = 0; x < numHorizVertices; ++x) {
 
-                    if (y == energies.length - 1) {
+                    if (y == numVertVertices - 1) {
 
                         prevRow[x] = new VerticalSeamGraphVertexNonEndpoint(new Pair<Integer>(x, y), picture.getRGB(x, y));
                         prevRow[x].bottomEdge = new Edge<VerticalSeamGraphVertex>(prevRow[x], end, energyOfPixel(x, y));
@@ -322,9 +323,16 @@ public class DijkstraSeamFinderOptimized {
                     } else {
 
                         currRow[x] = new VerticalSeamGraphVertexNonEndpoint(new Pair<Integer>(x, y), picture.getRGB(x, y));
-                        currRow[x].leftEdge = new Edge<VerticalSeamGraphVertex>(currRow[x], prevRow[x - 1], energyOfPixel(x, y));
+
+                        if (x > 0) {
+                            currRow[x].leftEdge = new Edge<VerticalSeamGraphVertex>(currRow[x], prevRow[x - 1], energyOfPixel(x, y));
+                        }
+
                         currRow[x].bottomEdge = new Edge<VerticalSeamGraphVertex>(currRow[x], prevRow[x], energyOfPixel(x, y));
-                        currRow[x].rightEdge = new Edge<VerticalSeamGraphVertex>(currRow[x], prevRow[x + 1], energyOfPixel(x, y));
+
+                        if (x < numHorizVertices - 1) {
+                            currRow[x].rightEdge = new Edge<VerticalSeamGraphVertex>(currRow[x], prevRow[x + 1], energyOfPixel(x, y));
+                        }
 
                         currRow[x].edgeList.add(currRow[x].leftEdge);
                         currRow[x].edgeList.add(currRow[x].bottomEdge);
@@ -371,7 +379,26 @@ public class DijkstraSeamFinderOptimized {
         }
 
         public Picture toPicture() {
+            Picture p = new Picture(numHorizVertices,numVertVertices);
 
+            VerticalSeamGraphVertex curs = (VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexSource) verticalSeamGraph.start).edgeList.get(0).to);
+
+            for (int y=0; y<verticalSeamGraph.numVertVertices; ++y) {
+                VerticalSeamGraphVertex start = curs;
+
+                for (int x=0; x<verticalSeamGraph.numHorizVertices; ++x) {
+
+                    // check invariants on curs
+                    VerticalSeamGraphVertexNonEndpoint v = (VerticalSeamGraphVertexNonEndpoint) curs;
+                    p.setRGB(x,y,v.getRGB());
+
+                    curs = ((VerticalSeamGraphVertexNonEndpoint) curs).right;
+
+                }
+                curs = ((VerticalSeamGraphVertexNonEndpoint) start).bottom;
+            }
+
+            return p;
         }
 
         // update the weights of the edges of v
