@@ -143,7 +143,7 @@ class VerticalSeamGraphVertexSource extends VerticalSeamGraphVertex {
     }
 
     public VerticalSeamGraphVertexSource(Pair<Integer> coord) {
-        this.coord = coord;
+        super(coord);
         isSource = true;
         isSink = false;
     }
@@ -159,7 +159,7 @@ class VerticalSeamGraphVertexSink extends VerticalSeamGraphVertex {
     }
 
     public VerticalSeamGraphVertexSink(Pair<Integer> coord) {
-        this.coord = coord;
+        super(coord);
         isSource = false;
         isSink = true;
     }
@@ -267,10 +267,7 @@ public class DijkstraSeamFinderOptimized {
 
     public DijkstraSeamFinderOptimized(Picture picture, double[][] energies) {
         this.pathFinder = createPathFinder();
-        VerticalSeamGraphOptimized verticalSeamGraph = new VerticalSeamGraphOptimized(picture, energies);
-    }
-
-    public void createVerticalSeamGraphOptimized() {
+        this.verticalSeamGraph = new VerticalSeamGraphOptimized(picture, energies);
     }
 
     protected <G extends Graph<V, Edge<V>>, V> ShortestPathFinder<G, V, Edge<V>> createPathFinder() {
@@ -304,8 +301,8 @@ public class DijkstraSeamFinderOptimized {
             numVertVertices = energies[0].length;
 
             // create source and sink
-            end = new VerticalSeamGraphVertexSink(new Pair<>(-2, -2));
             start = new VerticalSeamGraphVertexSource(new Pair<Integer>(-1, -1));
+            end = new VerticalSeamGraphVertexSink(new Pair<>(-2, -2));
 
             VerticalSeamGraphVertexNonEndpoint prevRow[] = new VerticalSeamGraphVertexNonEndpoint[numHorizVertices];
             VerticalSeamGraphVertexNonEndpoint currRow[] = new VerticalSeamGraphVertexNonEndpoint[numHorizVertices];

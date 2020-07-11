@@ -12,7 +12,7 @@ public class OptimizedSeamCarverTest {
 
     public boolean checkThatEdgeEndpointsHaveCorrectCoordinates(DijkstraSeamFinderOptimized.VerticalSeamGraphOptimized G) {
         for (Edge<VerticalSeamGraphVertex> e : ((VerticalSeamGraphVertexSource) G.start).edgeList) {
-            if (((VerticalSeamGraphVertexNonEndpoint) e.from).top.equals(e.to)) {
+            if (((VerticalSeamGraphVertexNonEndpoint) e.to).top.equals(e.from)) {
                 return false;
             }
         }
