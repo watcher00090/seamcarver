@@ -167,9 +167,9 @@ class VerticalSeamGraphVertexSink extends VerticalSeamGraphVertex {
 
 class DualGradientEnergyFunctionNodal implements NodalEnergyFunction {
 
-    RedColorFunction r_func;
-    BlueColorFunction b_func;
-    GreenColorFunction g_func;
+    RedColorFunction r_func = new RedColorFunction();
+    BlueColorFunction b_func = new BlueColorFunction();
+    GreenColorFunction g_func = new GreenColorFunction();
 
     public double apply(VerticalSeamGraphVertexNonEndpoint v) {
         System.out.println("Calling DualGradientEnergyFunction::apply....");
@@ -210,7 +210,11 @@ class DualGradientEnergyFunctionNodal implements NodalEnergyFunction {
     }
 
     private static DifferenceType getXDifferenceType(VerticalSeamGraphVertexNonEndpoint v) {
-        if (v.left == null) { // x == 0
+        if (v.isSource || v.isSink) {
+            System.out.println("Internal error, getXDifferenceType was called on a source or sink");
+            System.exit(1);
+            return DifferenceType.CentralDifference;
+        } else if (v.left == null) { // x == 0
             return DifferenceType.ForwardDifference;
         } else if (v.right == null) { // x == width - 1
             return DifferenceType.BackwardDifference;
@@ -220,7 +224,11 @@ class DualGradientEnergyFunctionNodal implements NodalEnergyFunction {
     }
 
     private static DifferenceType getYDifferenceType(VerticalSeamGraphVertexNonEndpoint v) {
-        if (v.top == null) { // y == 0
+        if (v.isSource || v.isSink) {
+            System.out.println("Internal error, getXDifferenceType was called on a source or sink");
+            System.exit(1);
+            return DifferenceType.CentralDifference;
+        } else if (v.coord.y == 0) { // y == 0
             return DifferenceType.ForwardDifference;
         } else if (v.bottomLeft == null && v.bottomRight == null) { // y == height - 1
             return DifferenceType.BackwardDifference;
@@ -294,6 +302,9 @@ public class DijkstraSeamFinderOptimized {
         public VerticalSeamGraphOptimized(Picture picture, double[][] energies) {
             this.energyFunction = new DualGradientEnergyFunctionNodal();
             this.energies = energies;
+
+            assert (energies.length >= 3 && energies[0].length >= 3); // for the sake of the nodal energy function
+
 
             assert (energies.length > 0 && energies[0].length > 0);
             numHorizVertices = energies.length;
@@ -388,10 +399,12 @@ public class DijkstraSeamFinderOptimized {
         }
 
         // update the weights of the edges of v
-        public void computeEnergy(VerticalSeamGraphVertexNonEndpoint v) {
+        public double computeEnergy(VerticalSeamGraphVertexNonEndpoint v) {
+            double val = energyFunction.apply(v);
             if (v.leftEdge != null) v.leftEdge.weight = energyFunction.apply(v);
             if (v.rightEdge != null) v.rightEdge.weight = energyFunction.apply(v);
             if (v.bottomEdge != null) v.bottomEdge.weight = energyFunction.apply(v);
+            return val;
         }
 
         public double energyOfPixel(int x, int y) {

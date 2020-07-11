@@ -5,8 +5,7 @@ import org.junit.jupiter.api.function.ThrowingSupplier;
 import java.io.File;
 import java.io.IOException;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class OptimizedSeamCarverTest {
 
@@ -199,17 +198,38 @@ public class OptimizedSeamCarverTest {
 
 
     @Test
-    public void testForVerticalSeamGraphThatTheNeighborsHaveCorrectCoordinates() {
-        //return checkThatNeighborsHaveCorrectCoordinates();
-    }
-
-    @Test
-    public void testForVerticalSeamGraphThatTheEdgesAreConnectedToTheCorrectVertices() {
-       // return checkThatEdgeEndpointsHaveCorrectCoordinates();
-    }
-
-    @Test
     public void energyCalculationsMatchUp() {
+        testThatEnergyCalculationsMatchUpForImage("small_image_1.png");
+        testThatEnergyCalculationsMatchUpForImage("small_image_2.png");
+        testThatEnergyCalculationsMatchUpForImage("small_image_3.png");
+    }
+
+    private void testThatEnergyCalculationsMatchUpForImage(String filename) {
+
+        Picture picture = PictureUtils.loadPicture(filename);
+        double[][] energies = SeamCarver.computeEnergies(picture, new DualGradientEnergyFunction());
+        DijkstraSeamFinderOptimized sf = new DijkstraSeamFinderOptimized(picture, energies);
+
+        DijkstraSeamFinderOptimized.VerticalSeamGraphOptimized G = sf.verticalSeamGraph;
+
+        VerticalSeamGraphVertex curs = (VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexSource) G.start).edgeList.get(0).to);
+
+        for (int y=0; y<G.numVertVertices; ++y) {
+            VerticalSeamGraphVertex start = curs;
+
+            for (int x=0; x<G.numHorizVertices; ++x) {
+
+                VerticalSeamGraphVertexNonEndpoint v = (VerticalSeamGraphVertexNonEndpoint) curs;
+
+                assertTrue((G.computeEnergy(v) - G.energyOfPixel(x,y)) < 1E-6);
+
+                curs = ((VerticalSeamGraphVertexNonEndpoint) curs).right;
+
+            }
+
+            curs = ((VerticalSeamGraphVertexNonEndpoint) start).bottom;
+        }
+
     }
 
     @Test
