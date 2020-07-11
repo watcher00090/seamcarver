@@ -305,17 +305,18 @@ public class DijkstraSeamFinderOptimized {
             end = new VerticalSeamGraphVertexSink(new Pair<>(-2, -2));
 
             VerticalSeamGraphVertexNonEndpoint prevRow[] = new VerticalSeamGraphVertexNonEndpoint[numHorizVertices];
-            VerticalSeamGraphVertexNonEndpoint currRow[] = new VerticalSeamGraphVertexNonEndpoint[numHorizVertices];
 
             for (int y = numVertVertices - 1; y > -1; y--) {
+
+                VerticalSeamGraphVertexNonEndpoint currRow[] = new VerticalSeamGraphVertexNonEndpoint[numHorizVertices];
 
                 for (int x = 0; x < numHorizVertices; ++x) {
 
                     if (y == numVertVertices - 1) {
 
-                        prevRow[x] = new VerticalSeamGraphVertexNonEndpoint(new Pair<Integer>(x, y), picture.getRGB(x, y));
-                        prevRow[x].bottomEdge = new Edge<VerticalSeamGraphVertex>(prevRow[x], end, energyOfPixel(x, y));
-                        prevRow[x].edgeList.add(prevRow[x].bottomEdge);
+                        currRow[x] = new VerticalSeamGraphVertexNonEndpoint(new Pair<Integer>(x, y), picture.getRGB(x, y));
+                        currRow[x].bottomEdge = new Edge<VerticalSeamGraphVertex>(currRow[x], end, energyOfPixel(x, y));
+                        //prevRow[x].edgeList.add(prevRow[x].bottomEdge);
 
                     } else {
 
@@ -323,12 +324,16 @@ public class DijkstraSeamFinderOptimized {
 
                         if (x > 0) {
                             currRow[x].leftEdge = new Edge<VerticalSeamGraphVertex>(currRow[x], prevRow[x - 1], energyOfPixel(x, y));
+                            currRow[x].bottomLeft = prevRow[x - 1];
+                            prevRow[x - 1].topRight = currRow[x];
                         }
 
                         currRow[x].bottomEdge = new Edge<VerticalSeamGraphVertex>(currRow[x], prevRow[x], energyOfPixel(x, y));
 
                         if (x < numHorizVertices - 1) {
                             currRow[x].rightEdge = new Edge<VerticalSeamGraphVertex>(currRow[x], prevRow[x + 1], energyOfPixel(x, y));
+                            currRow[x].bottomRight = prevRow[x + 1];
+                            prevRow[x + 1].topLeft = currRow[x];
                         }
 
                         currRow[x].edgeList.add(currRow[x].leftEdge);
@@ -340,16 +345,6 @@ public class DijkstraSeamFinderOptimized {
                             currRow[x - 1].right = currRow[x];
                         }
 
-                        if (x > 0) {
-                            currRow[x].bottomLeft = prevRow[x - 1];
-                            prevRow[x - 1].topRight = currRow[x];
-                        }
-
-                        if (x < energies[0].length - 1) {
-                            currRow[x].bottomRight = prevRow[x + 1];
-                            prevRow[x + 1].topLeft = currRow[x];
-                        }
-
                         currRow[x].bottom = prevRow[x];
                         prevRow[x].top = currRow[x];
 
@@ -357,21 +352,15 @@ public class DijkstraSeamFinderOptimized {
 
                 }
 
-
-                /*
-                if (y == energies.length - 1) {
-                    end.leftParent = prevRow[0];
-                }
-                */
-
-
-                if (y == 0) {
-                    for (int x = 0; x < prevRow.length; ++x) {
-                        start.edgeList.add(new Edge(start, prevRow[x], 0));
-                    }
-                }
+                prevRow = currRow;
 
             }
+
+            for (int x = 0; x < prevRow.length; ++x) {
+                start.edgeList.add(new Edge(start, prevRow[x], 0));
+                prevRow[x].top = start;
+            }
+
             start.leftChild = prevRow[0];
         }
 

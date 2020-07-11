@@ -12,7 +12,7 @@ public class OptimizedSeamCarverTest {
 
     public boolean checkThatEdgeEndpointsHaveCorrectCoordinates(DijkstraSeamFinderOptimized.VerticalSeamGraphOptimized G) {
         for (Edge<VerticalSeamGraphVertex> e : ((VerticalSeamGraphVertexSource) G.start).edgeList) {
-            if (((VerticalSeamGraphVertexNonEndpoint) e.to).top.equals(e.from)) {
+            if (!((VerticalSeamGraphVertexNonEndpoint) e.to).top.equals(e.from)) {
                 return false;
             }
         }
@@ -30,27 +30,27 @@ public class OptimizedSeamCarverTest {
                 VerticalSeamGraphVertex bottomVertex = v.bottom;
                 VerticalSeamGraphVertex bottomRightVertex = v.bottomRight;
 
-                if (v.leftEdge != null && !VerticalSeamGraphVertex.checkEquality(bottomLeftVertex, v.leftEdge.from)) {
+                if (v.leftEdge != null && !VerticalSeamGraphVertex.checkEquality(bottomLeftVertex, v.leftEdge.to)) {
                     return false;
                 }
 
-                if (v.bottomEdge != null && !VerticalSeamGraphVertex.checkEquality(bottomVertex, v.bottomEdge.from)) {
+                if (v.bottomEdge != null && !VerticalSeamGraphVertex.checkEquality(bottomVertex, v.bottomEdge.to)) {
                     return false;
                 }
 
-                if (v.rightEdge != null && !VerticalSeamGraphVertex.checkEquality(bottomLeftVertex, v.rightEdge.from)) {
+                if (v.rightEdge != null && !VerticalSeamGraphVertex.checkEquality(bottomRightVertex, v.rightEdge.to)) {
                     return false;
                 }
 
-                if (v.leftEdge != null && !(v.leftEdge.from.coord.x + 1 == v.coord.x && v.leftEdge.from.coord.y - 1 == v.coord.y)) {
+                if (v.leftEdge != null && !(v.leftEdge.to.coord.x + 1 == v.coord.x && v.leftEdge.to.coord.y - 1 == v.coord.y)) {
                     return false;
                 }
 
-                if (v.bottomEdge != null && !(v.bottomEdge.from.coord.y - 1 == v.coord.y)) {
+                if (v.bottomEdge != null && !(v.bottomEdge.to.coord.y - 1 == v.coord.y)) {
                     return false;
                 }
 
-                if (v.rightEdge != null && !(v.rightEdge.from.coord.x -1 == v.coord.x && v.rightEdge.from.coord.y - 1 == v.coord.y)) {
+                if (v.rightEdge != null && !(v.rightEdge.to.coord.x -1 == v.coord.x && v.rightEdge.to.coord.y - 1 == v.coord.y)) {
                     return false;
                 }
 
