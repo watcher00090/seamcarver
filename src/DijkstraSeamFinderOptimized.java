@@ -264,8 +264,12 @@ public class DijkstraSeamFinderOptimized {
     public VerticalSeamGraphVertex topRowVertex = null;
     public VerticalSeamGraphOptimized verticalSeamGraph;
 
-    public DijkstraSeamFinderOptimized() {
+    public DijkstraSeamFinderOptimized(Picture picture, double[][] energies) {
         this.pathFinder = createPathFinder();
+        VerticalSeamGraphOptimized verticalSeamGraph = new VerticalSeamGraphOptimized(picture, energies);
+    }
+
+    public void createVerticalSeamGraphOptimized() {
     }
 
     protected <G extends Graph<V, Edge<V>>, V> ShortestPathFinder<G, V, Edge<V>> createPathFinder() {
@@ -290,7 +294,7 @@ public class DijkstraSeamFinderOptimized {
         double[][] energies;
 
         // weight of edge = energy of 'from' vertex
-        public VerticalSeamGraphOptimized(double[][] energies, Picture picture) {
+        public VerticalSeamGraphOptimized(Picture picture, double[][] energies) {
             this.energyFunction = new DualGradientEnergyFunctionNodal();
             this.energies = energies;
 
@@ -548,7 +552,7 @@ public class DijkstraSeamFinderOptimized {
                     VerticalSeamGraphVertex topLeft = ((VerticalSeamGraphVertexNonEndpoint) v).topLeft;
                     if (topLeft != null && deletionCase != DeletionCase.case1) {
                         if (((VerticalSeamGraphVertexNonEndpoint) topLeft).bottomRight != null) {
-                            (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) topLeft).bottomRight).topLeft = (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) topLeft);
+                            ((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) topLeft).bottomRight).topLeft =  topLeft;
                         }
                     }
                 }
@@ -557,7 +561,7 @@ public class DijkstraSeamFinderOptimized {
                     VerticalSeamGraphVertex topRight = ((VerticalSeamGraphVertexNonEndpoint) v).topRight;
                     if (topRight != null && deletionCase != DeletionCase.case3) {
                         if (((VerticalSeamGraphVertexNonEndpoint) topRight).bottomLeft != null) {
-                            (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) topRight).bottomLeft).topRight = (((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) topRight);
+                            ((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) topRight).bottomLeft).topRight = topRight;
                         }
                     }
                 }
@@ -593,7 +597,7 @@ public class DijkstraSeamFinderOptimized {
         }
 
         public void recomputeEnergiesOfVerticalSeamGraph(List<Integer> lastSeam) {
-            VerticalSeamGraphVertex v = verticalSeamGraph.start.edgeList.get(lastSeam.get(0)).to; // (currVertex and prevVertex as used to traverse the iamge)
+            VerticalSeamGraphVertex v = verticalSeamGraph.start.edgeList.get(lastSeam.get(0)).to; // (currVertex and prevVertex as used to traverse the image)
             DeletionCase deletionCase;
 
             if (!(((VerticalSeamGraphVertexNonEndpoint) v).top).isSource) {
@@ -657,6 +661,68 @@ public class DijkstraSeamFinderOptimized {
         verticalSeamGraph.removeSeam(ret);
 
         return ret;
+    }
+
+    // for testing purposes
+    public List<Integer> generateRandomHorizontalSeam() {
+
+        assert(verticalSeamGraph.numHorizVertices > 1 && verticalSeamGraph.numVertVertices > 1);
+
+        List<Integer> seam = new ArrayList<>();
+
+        double lowThreshold = 1/3;
+        double highThreshold = 2/3;
+        double middleThreshold = 1/2;
+
+        boolean onTop = false;
+        boolean onBottom = false;
+
+        int min = 0;
+        int max = verticalSeamGraph.numVertVertices-1;
+
+        int val = ThreadLocalRandom.current().nextInt(min, max + 1);
+        int prevVal = val;
+
+        for (int i=0; i<verticalSeamGraph.numHorizVertices; ++i) {
+
+            double x = Math.random();
+
+            if (onTop) {
+                if (x <= middleThreshold) {
+                    val = prevVal;
+                } else {
+                    val = prevVal + 1;
+                    onTop = false;
+                }
+            } else if (onBottom){
+                if (x <= middleThreshold) {
+                    val = prevVal - 1;
+                    onBottom = false;
+                } else {
+                    val = prevVal;
+                }
+            } else {
+                if (x < lowThreshold) {
+                    val = prevVal - 1;
+                } else if (lowThreshold <= x && x < highThreshold) {
+                    val = prevVal;
+                } else { // highThreshold <= x
+                    val = prevVal + 1;
+                }
+            }
+
+            if (val == verticalSeamGraph.numVertVertices - 1) {
+                onBottom = true;
+            }
+
+            if (val == 0) {
+                onTop = true;
+            }
+
+            seam.add(val);
+        }
+
+        return seam;
     }
 
     // for testing purposes

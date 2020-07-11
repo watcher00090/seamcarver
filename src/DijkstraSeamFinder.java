@@ -109,6 +109,27 @@ public class DijkstraSeamFinder implements SeamFinder {
             return neighbors;
         }
 
+
+        public List<Integer> findVerticalSeam(double[][] energies) {
+            if (energies.length == 0 || energies[0].length == 0) {
+                return new ArrayList<Integer>();
+            }
+
+            List<Integer> ret = new ArrayList<>();
+            VerticalSeamGraph verticalSeamGraph = new VerticalSeamGraph(energies);
+            DijkstraShortestPathFinder<Graph<Pair<Integer>, Edge<Pair<Integer>>>, Pair<Integer>, Edge<Pair<Integer>>> pf;
+            pf = new DijkstraShortestPathFinder<>();
+            ShortestPath<Pair<Integer>, Edge<Pair<Integer>>> sp;
+            sp = pf.findShortestPath(verticalSeamGraph, verticalSeamGraph.start, verticalSeamGraph.end);
+            for (Pair<Integer> vertex : sp.vertices()) {
+                if (!vertex.equalsPoint(verticalSeamGraph.start) && !vertex.equalsPoint(verticalSeamGraph.end)) {
+                    ret.add(vertex.x);
+                }
+            }
+            return ret;
+        }
+
+
     }
 
     public class HorizontalSeamGraph implements Graph<Pair<Integer>, Edge<Pair<Integer>>> {

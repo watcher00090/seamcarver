@@ -1,3 +1,4 @@
+import edu.princeton.cs.algs4.Picture;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -125,18 +126,26 @@ public class OptimizedSeamCarverTest {
     }
 
     @Test
+    public void infrastructureTest() {
+        Picture picture = PictureUtils.loadPicture("small image 1");
+        double[][] energies = SeamCarver.computeEnergies(picture, new DualGradientEnergyFunction());
+        DijkstraSeamFinderOptimized sf = new DijkstraSeamFinderOptimized(picture, energies);
+        assertEquals(true,checkThatEdgeEndpointsHaveCorrectCoordinates(sf.verticalSeamGraph));
+        assertEquals(true,checkThatNeighborsHaveCorrectCoordinates(sf.verticalSeamGraph));
+    }
+
+    @Test
     public void testForVerticalSeamGraphThatTheNeighborsHaveCorrectCoordinates() {
-        return checkThatNeighborsHaveCorrectCoordinates();
+        //return checkThatNeighborsHaveCorrectCoordinates();
     }
 
     @Test
     public void testForVerticalSeamGraphThatTheEdgesAreConnectedToTheCorrectVertices() {
-        return checkThatEdgeEndpointsHaveCorrectCoordinates();
+       // return checkThatEdgeEndpointsHaveCorrectCoordinates();
     }
 
     @Test
     public void energyCalculationsMatchUp() {
-
     }
 
     @Test
