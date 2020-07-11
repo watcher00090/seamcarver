@@ -4,6 +4,7 @@ import org.junit.jupiter.api.function.ThrowingSupplier;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -234,16 +235,97 @@ public class OptimizedSeamCarverTest {
 
     @Test
     public void bothSeamFindersFindCorrectSeam() {
+        bothSeamFindersFindCorrectSeam("small_image_1.png");
+        bothSeamFindersFindCorrectSeam("small_image_2.png");
+        bothSeamFindersFindCorrectSeam("small_image_3.png");
+    }
+
+    public void bothSeamFindersFindCorrectSeam(String filename) {
+
+    }
+
+    @Test
+    public void testThatTheRandomlyGeneratedVerticalSeamsAreCorrect() {
+        testThatTheRandomlyGeneratedVerticalSeamsAreCorrect("small_image_1.png",1000);
+        testThatTheRandomlyGeneratedVerticalSeamsAreCorrect("small_image_2.png",1000);
+        testThatTheRandomlyGeneratedVerticalSeamsAreCorrect("small_image_3.png",1000);
+    }
+
+    public void testThatTheRandomlyGeneratedVerticalSeamsAreCorrect(String filename, int numIterations) {
+        Picture picture = PictureUtils.loadPicture(filename);
+        double[][] energies = SeamCarver.computeEnergies(picture, new DualGradientEnergyFunction());
+        DijkstraSeamFinderOptimized sf = new DijkstraSeamFinderOptimized(picture, energies);
+
+        DijkstraSeamFinderOptimized.VerticalSeamGraphOptimized G = sf.verticalSeamGraph;
+
+        int i = 0;
+        do {
+            List<Integer> seam = sf.generateRandomVerticalSeam();
+
+            assertTrue(seam.size() == G.numVertVertices);
+            int prev = seam.get(0);
+            for (int j=0; j<seam.size(); ++j) {
+                int val = seam.get(j);
+                assertTrue(0 <= val && val < G.numHorizVertices);
+                assertTrue(Math.abs(prev - val) <= 1);
+                prev = val;
+            }
+
+            System.out.println("Seam generation testing: passed iteration " + i + " with file " + filename);
+
+            ++i;
+
+        } while (i < numIterations);
 
     }
 
     @Test
     public void removingSeamsYieldsIdenticalImages() {
+        removingSeamsYieldsIdenticalImages("small_image_1.png");
+        removingSeamsYieldsIdenticalImages("small_image_2.png");
+        removingSeamsYieldsIdenticalImages("small_image_3.png");
+    }
 
+    public void removingSeamsYieldsIdenticalImages(String filename) {
+        Picture picture = PictureUtils.loadPicture(filename);
+        double[][] energies = SeamCarver.computeEnergies(picture, new DualGradientEnergyFunction());
+        DijkstraSeamFinderOptimized sf = new DijkstraSeamFinderOptimized(picture, energies);
+
+        DijkstraSeamFinderOptimized.VerticalSeamGraphOptimized G = sf.verticalSeamGraph;
+        List<Integer> seam1 = sf.generateRandomVerticalSeam();
     }
 
     @Test
     public void removingSeamsPreservesGraphInvariants() {
+        removingSeamsPreservesGraphInvariants("small_image_1.png");
+        removingSeamsPreservesGraphInvariants("small_image_2.png");
+        removingSeamsPreservesGraphInvariants("small_image_3.png");
+    }
+
+    public void removingSeamsPreservesGraphInvariants(String filename) {
+        Picture picture = PictureUtils.loadPicture(filename);
+        double[][] energies = SeamCarver.computeEnergies(picture, new DualGradientEnergyFunction());
+        DijkstraSeamFinderOptimized sf = new DijkstraSeamFinderOptimized(picture, energies);
+
+        DijkstraSeamFinderOptimized.VerticalSeamGraphOptimized G = sf.verticalSeamGraph;
+
+        List<Integer> seam1 = sf.generateRandomVerticalSeam();
+        G.removeSeam(seam1);
+
+        assertEquals(true, checkThatEdgeEndpointsHaveCorrectCoordinates(G));
+        assertEquals(true, checkThatNeighborsHaveCorrectCoordinates(G));
+
+        List<Integer> seam2 = sf.generateRandomVerticalSeam();
+        G.removeSeam(seam2);
+
+        assertEquals(true, checkThatEdgeEndpointsHaveCorrectCoordinates(G));
+        assertEquals(true, checkThatNeighborsHaveCorrectCoordinates(G));
+
+        List<Integer> seam3 = sf.generateRandomVerticalSeam();
+        G.removeSeam(seam3);
+
+        assertEquals(true, checkThatEdgeEndpointsHaveCorrectCoordinates(G));
+        assertEquals(true, checkThatNeighborsHaveCorrectCoordinates(G));
 
     }
 

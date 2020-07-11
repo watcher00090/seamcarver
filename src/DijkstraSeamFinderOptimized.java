@@ -483,6 +483,7 @@ public class DijkstraSeamFinderOptimized {
             removeSeamHelper(lastSeam);
             removeSeamHelper2(lastSeam);
             recomputeEnergiesOfVerticalSeamGraph(lastSeam);
+            this.numHorizVertices--;
         }
 
         public void removeSeamHelper(List<Integer> lastSeam) {
@@ -771,7 +772,17 @@ public class DijkstraSeamFinderOptimized {
         int val = ThreadLocalRandom.current().nextInt(min, max + 1);
         int prevVal = val;
 
-        for (int i=0; i<verticalSeamGraph.numVertVertices; ++i) {
+        seam.add(val);
+
+        for (int i=0; i<verticalSeamGraph.numVertVertices-1; ++i) {
+
+            if (val == verticalSeamGraph.numHorizVertices - 1) {
+                onRightSide = true;
+            }
+
+            if (val == 0) {
+                onLeftSide = true;
+            }
 
             double x = Math.random();
 
@@ -797,14 +808,6 @@ public class DijkstraSeamFinderOptimized {
                 } else { // highThreshold <= x
                     val = prevVal + 1;
                 }
-            }
-
-            if (val == verticalSeamGraph.numHorizVertices - 1) {
-                onRightSide = true;
-            }
-
-            if (val == 0) {
-                onLeftSide = true;
             }
 
             seam.add(val);
