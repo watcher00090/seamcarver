@@ -109,6 +109,7 @@ class VerticalSeamGraphVertexNonEndpoint extends VerticalSeamGraphVertex {
     public VerticalSeamGraphVertex bottomLeft = null;
     public VerticalSeamGraphVertex bottom = null;
     public VerticalSeamGraphVertex bottomRight = null;
+    public boolean inSeam = false;
 
     // if an edge is non null, both it's 'from' and 'to' vertices will be non-null
     public Edge<VerticalSeamGraphVertex> leftEdge;
@@ -173,6 +174,10 @@ class DualGradientEnergyFunctionNodal implements NodalEnergyFunction {
 
     public double apply(VerticalSeamGraphVertexNonEndpoint v) {
         System.out.println("Calling DualGradientEnergyFunction::apply....");
+
+        if (v == null) {
+            System.out.println("v is null here");
+        }
 
         DifferenceType xDifferenceType = getXDifferenceType(v);
         DifferenceType yDifferenceType = getYDifferenceType(v);
@@ -267,6 +272,8 @@ class DualGradientEnergyFunctionNodal implements NodalEnergyFunction {
 }
 
 public class DijkstraSeamFinderOptimized {
+    public boolean DEBUG_MODE = false;
+
     private final ShortestPathFinder<Graph<SeamGraphVertex, Edge<SeamGraphVertex>>, SeamGraphVertex, Edge<SeamGraphVertex>> pathFinder;
     public List<Integer> lastSeam = null;
     public VerticalSeamGraphVertex topRowVertex = null;
@@ -297,6 +304,7 @@ public class DijkstraSeamFinderOptimized {
         int numVertVertices;
         DualGradientEnergyFunctionNodal energyFunction;
         double[][] energies;
+        public List<Integer> debugSeam;
 
         // weight of edge = energy of 'from' vertex
         public VerticalSeamGraphOptimized(Picture picture, double[][] energies) {
@@ -304,7 +312,6 @@ public class DijkstraSeamFinderOptimized {
             this.energies = energies;
 
             assert (energies.length >= 3 && energies[0].length >= 3); // for the sake of the nodal energy function
-
 
             assert (energies.length > 0 && energies[0].length > 0);
             numHorizVertices = energies.length;
@@ -433,7 +440,12 @@ public class DijkstraSeamFinderOptimized {
 
             (((VerticalSeamGraphVertexNonEndpoint) v).top).edgeList.remove(lastSeam.get(0)); // remove the edge from the source
 
+            ((VerticalSeamGraphVertexNonEndpoint) v).inSeam = true;
+
             for (int i = 1; i < lastSeam.size(); ++i) {
+
+                correctXCoordinatesOfRightVertices(v);
+
                 int i1 = lastSeam.get(i-1);
                 int i2 = lastSeam.get(i);
 
@@ -448,8 +460,7 @@ public class DijkstraSeamFinderOptimized {
                     deletionCase = DeletionCase.case2;
                 }
 
-                VerticalSeamGraphVertex leftVertex = ((VerticalSeamGraphVertexNonEndpoint) v).left;
-                VerticalSeamGraphVertex rightVertex = ((VerticalSeamGraphVertexNonEndpoint) v).right;
+                ((VerticalSeamGraphVertexNonEndpoint) v).inSeam = true;
 
                 if (((VerticalSeamGraphVertexNonEndpoint) v).topLeft != null) {
                     VerticalSeamGraphVertex topLeft = ((VerticalSeamGraphVertexNonEndpoint) v).topLeft;
@@ -471,7 +482,6 @@ public class DijkstraSeamFinderOptimized {
                         if (deletionCase == DeletionCase.case3) {
                             ((VerticalSeamGraphVertexNonEndpoint) top).bottomEdge.from = ((VerticalSeamGraphVertexNonEndpoint) v).right;
                             ((VerticalSeamGraphVertexNonEndpoint) top).rightEdge.from = ((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) v).right).right;
-
                         } else { // deletionCase  = case1
                             ((VerticalSeamGraphVertexNonEndpoint) top).bottomEdge.from = ((VerticalSeamGraphVertexNonEndpoint) v).left;
                             ((VerticalSeamGraphVertexNonEndpoint) top).leftEdge.from = ((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) v).left).left;
@@ -480,10 +490,22 @@ public class DijkstraSeamFinderOptimized {
                     }
                 }
             }
+            correctXCoordinatesOfRightVertices(v);
+
             removeSeamHelper(lastSeam);
             removeSeamHelper2(lastSeam);
             recomputeEnergiesOfVerticalSeamGraph(lastSeam);
             this.numHorizVertices--;
+        }
+
+        private void correctXCoordinatesOfRightVertices(VerticalSeamGraphVertex v) {
+            if (DEBUG_MODE) {
+                VerticalSeamGraphVertexNonEndpoint curs = (VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) v).right);
+                while (curs != null) {
+                    curs.coord.x--;
+                    curs = (VerticalSeamGraphVertexNonEndpoint) (curs.right);
+                }
+            }
         }
 
         public void removeSeamHelper(List<Integer> lastSeam) {
@@ -500,6 +522,12 @@ public class DijkstraSeamFinderOptimized {
                 int i1 = lastSeam.get(i-1);
                 int i2 = lastSeam.get(i);
 
+                VerticalSeamGraphVertex leftVertex = ((VerticalSeamGraphVertexNonEndpoint) v).left;
+                VerticalSeamGraphVertex rightVertex = ((VerticalSeamGraphVertexNonEndpoint) v).right;
+
+                if (leftVertex != null) ((VerticalSeamGraphVertexNonEndpoint) leftVertex).right = ((VerticalSeamGraphVertexNonEndpoint) v).right;
+                if (rightVertex != null) ((VerticalSeamGraphVertexNonEndpoint) rightVertex).left = ((VerticalSeamGraphVertexNonEndpoint) v).left;
+
                 if (i1 < i2) {
                     v = ((VerticalSeamGraphVertexNonEndpoint) v).bottomRight;
                     deletionCase = DeletionCase.case1;
@@ -510,12 +538,6 @@ public class DijkstraSeamFinderOptimized {
                     v = ((VerticalSeamGraphVertexNonEndpoint) v).bottom;
                     deletionCase = DeletionCase.case2;
                 }
-
-                VerticalSeamGraphVertex leftVertex = ((VerticalSeamGraphVertexNonEndpoint) v).left;
-                VerticalSeamGraphVertex rightVertex = ((VerticalSeamGraphVertexNonEndpoint) v).right;
-
-                ((VerticalSeamGraphVertexNonEndpoint) leftVertex).right = ((VerticalSeamGraphVertexNonEndpoint) v).right;
-                ((VerticalSeamGraphVertexNonEndpoint) rightVertex).left = ((VerticalSeamGraphVertexNonEndpoint) v).left;
 
                 if (((VerticalSeamGraphVertexNonEndpoint) v).topLeft != null) {
                     VerticalSeamGraphVertex topLeft = ((VerticalSeamGraphVertexNonEndpoint) v).topLeft;
@@ -545,6 +567,13 @@ public class DijkstraSeamFinderOptimized {
                 }
 
             }
+
+            VerticalSeamGraphVertex leftVertex = ((VerticalSeamGraphVertexNonEndpoint) v).left;
+            VerticalSeamGraphVertex rightVertex = ((VerticalSeamGraphVertexNonEndpoint) v).right;
+
+            if (leftVertex != null) ((VerticalSeamGraphVertexNonEndpoint) leftVertex).right = ((VerticalSeamGraphVertexNonEndpoint) v).right;
+            if (rightVertex != null) ((VerticalSeamGraphVertexNonEndpoint) rightVertex).left = ((VerticalSeamGraphVertexNonEndpoint) v).left;
+
         }
 
         public void removeSeamHelper2(List<Integer> lastSeam) {
@@ -571,9 +600,6 @@ public class DijkstraSeamFinderOptimized {
                     v = ((VerticalSeamGraphVertexNonEndpoint) v).bottom;
                     deletionCase = DeletionCase.case2;
                 }
-
-                VerticalSeamGraphVertex leftVertex = ((VerticalSeamGraphVertexNonEndpoint) v).left;
-                VerticalSeamGraphVertex rightVertex = ((VerticalSeamGraphVertexNonEndpoint) v).right;
 
                 if (((VerticalSeamGraphVertexNonEndpoint) v).topLeft != null) {
                     VerticalSeamGraphVertex topLeft = ((VerticalSeamGraphVertexNonEndpoint) v).topLeft;

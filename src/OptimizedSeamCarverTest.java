@@ -165,7 +165,6 @@ public class OptimizedSeamCarverTest {
         assertEquals(true,checkThatNeighborsHaveCorrectCoordinates(sf.verticalSeamGraph));
     }
 
-
     @Test
     public void verticalSeamGraphProducesCorrectPicturesUponRequest() {
         verticalSeamGraphConstructorTestImage1();
@@ -306,22 +305,27 @@ public class OptimizedSeamCarverTest {
         Picture picture = PictureUtils.loadPicture(filename);
         double[][] energies = SeamCarver.computeEnergies(picture, new DualGradientEnergyFunction());
         DijkstraSeamFinderOptimized sf = new DijkstraSeamFinderOptimized(picture, energies);
+        sf.DEBUG_MODE = true;
 
         DijkstraSeamFinderOptimized.VerticalSeamGraphOptimized G = sf.verticalSeamGraph;
 
+
         List<Integer> seam1 = sf.generateRandomVerticalSeam();
+        G.debugSeam = seam1;
         G.removeSeam(seam1);
 
         assertEquals(true, checkThatEdgeEndpointsHaveCorrectCoordinates(G));
         assertEquals(true, checkThatNeighborsHaveCorrectCoordinates(G));
 
         List<Integer> seam2 = sf.generateRandomVerticalSeam();
+        G.debugSeam = seam2;
         G.removeSeam(seam2);
 
         assertEquals(true, checkThatEdgeEndpointsHaveCorrectCoordinates(G));
         assertEquals(true, checkThatNeighborsHaveCorrectCoordinates(G));
 
         List<Integer> seam3 = sf.generateRandomVerticalSeam();
+        G.debugSeam = seam3;
         G.removeSeam(seam3);
 
         assertEquals(true, checkThatEdgeEndpointsHaveCorrectCoordinates(G));
