@@ -723,9 +723,9 @@ public class DijkstraSeamFinderOptimized {
 
         List<Integer> seam = new ArrayList<>();
 
-        double lowThreshold = 1/3;
-        double highThreshold = 2/3;
-        double middleThreshold = 1/2;
+        double lowThreshold = ((double) 1.0)/3;
+        double highThreshold = ((double) 2.0)/3;
+        double middleThreshold = ((double) 1.0)/2;
 
         boolean onTop = false;
         boolean onBottom = false;
@@ -747,7 +747,7 @@ public class DijkstraSeamFinderOptimized {
                     val = prevVal + 1;
                     onTop = false;
                 }
-            } else if (onBottom){
+            } else if (onBottom) {
                 if (x <= middleThreshold) {
                     val = prevVal - 1;
                     onBottom = false;
@@ -785,9 +785,9 @@ public class DijkstraSeamFinderOptimized {
 
         List<Integer> seam = new ArrayList<>();
 
-        double lowThreshold = 1/3;
-        double highThreshold = 2/3;
-        double middleThreshold = 1/2;
+        double lowThreshold = ((double) 1.0)/3;
+        double highThreshold = ((double) 2.0)/3;
+        double middleThreshold = ((double) 1.0)/2;
 
         boolean onLeftSide = false;
         boolean onRightSide = false;

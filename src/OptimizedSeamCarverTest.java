@@ -333,6 +333,23 @@ public class OptimizedSeamCarverTest {
 
     }
 
+    @Test
+    public void printAFewVerticalSeams() {
+        Picture picture = PictureUtils.loadPicture("small_image_1.png");
+        double[][] energies = SeamCarver.computeEnergies(picture, new DualGradientEnergyFunction());
+        DijkstraSeamFinderOptimized sf = new DijkstraSeamFinderOptimized(picture, energies);
+        DijkstraSeamFinderOptimized.VerticalSeamGraphOptimized G = sf.verticalSeamGraph;
+
+        for (int i=0; i<50; ++i) {
+            List<Integer> seam = sf.generateRandomVerticalSeam();
+            assertTrue(seam.size() == G.numVertVertices);
+            for (int j = 0; j < seam.size(); ++j) {
+                System.out.print(seam.get(j) + ", ");
+            }
+            System.out.println();
+        }
+    }
+
     public static void main(String[] args) {
 
     }
