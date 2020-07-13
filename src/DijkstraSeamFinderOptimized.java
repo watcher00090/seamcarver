@@ -173,10 +173,11 @@ class DualGradientEnergyFunctionNodal implements NodalEnergyFunction {
     GreenColorFunction g_func = new GreenColorFunction();
 
     public double apply(VerticalSeamGraphVertexNonEndpoint v) {
-        System.out.println("Calling DualGradientEnergyFunction::apply....");
+        //System.out.println("Calling DualGradientEnergyFunction::apply....");
 
         if (v == null) {
             System.out.println("v is null here");
+            System.exit(1);
         }
 
         DifferenceType xDifferenceType = getXDifferenceType(v);
@@ -407,11 +408,15 @@ public class DijkstraSeamFinderOptimized {
 
         // update the weights of the edges of v
         public double computeEnergy(VerticalSeamGraphVertexNonEndpoint v) {
+
+            /*
             double val = energyFunction.apply(v);
             if (v.leftEdge != null) v.leftEdge.weight = energyFunction.apply(v);
             if (v.rightEdge != null) v.rightEdge.weight = energyFunction.apply(v);
             if (v.bottomEdge != null) v.bottomEdge.weight = energyFunction.apply(v);
             return val;
+             */
+            return 1.0;
         }
 
         public double energyOfPixel(int x, int y) {
@@ -626,6 +631,7 @@ public class DijkstraSeamFinderOptimized {
 
                             if (((VerticalSeamGraphVertexNonEndpoint) top).bottom != null) {
                                 ((VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) top).bottom)).top = top;
+                                ((VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) top).bottom)).topLeft = ((VerticalSeamGraphVertexNonEndpoint) top).left;
                             }
 
                             if (((VerticalSeamGraphVertexNonEndpoint) top).bottomRight != null) {
@@ -636,6 +642,7 @@ public class DijkstraSeamFinderOptimized {
 
                             if (((VerticalSeamGraphVertexNonEndpoint) top).bottom != null) {
                                 ((VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) top).bottom)).top = top;
+                                ((VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) top).bottom)).topRight = ((VerticalSeamGraphVertexNonEndpoint) top).right;
                             }
 
                             if (((VerticalSeamGraphVertexNonEndpoint) top).bottomLeft != null) {
@@ -837,6 +844,7 @@ public class DijkstraSeamFinderOptimized {
             }
 
             seam.add(val);
+            prevVal = val;
         }
 
         return seam;

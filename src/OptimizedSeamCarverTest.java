@@ -330,7 +330,6 @@ public class OptimizedSeamCarverTest {
 
         assertEquals(true, checkThatEdgeEndpointsHaveCorrectCoordinates(G));
         assertEquals(true, checkThatNeighborsHaveCorrectCoordinates(G));
-
     }
 
     @Test
