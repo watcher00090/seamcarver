@@ -13,6 +13,10 @@ enum Dir {
     x, y;
 }
 
+enum VerticalSeamGraphEdgeLocator {
+    leftEdge, bottomEdge, rightEdge;
+}
+
 class RedColorFunction implements Function<VerticalSeamGraphVertexNonEndpoint, Integer> {
     public Integer apply(VerticalSeamGraphVertexNonEndpoint x) {
         int rgb = x.getRGB();
@@ -96,6 +100,41 @@ class VerticalSeamGraphVertex extends SeamGraphVertex {
             return v1.equals(v2);
         }
     }
+
+    public void updateVerticalSeamGraphEdgeTo(VerticalSeamGraphEdgeLocator locator, VerticalSeamGraphVertex newTo) {
+        if (this.isSource || this.isSink) {
+            System.out.println("Internal error, updateVerticalSeamGraphEdgeTo called on a source or sink!");
+            System.exit(1);
+        }
+        
+        switch (locator) {
+            case bottomEdge:
+                if (newTo == null) {
+                    ((VerticalSeamGraphVertexNonEndpoint) this).bottomEdge = null;
+                } else {
+                    ((VerticalSeamGraphVertexNonEndpoint) this).bottomEdge.to = newTo;
+                }
+                break;
+            case leftEdge:
+                if (newTo == null) {
+                    ((VerticalSeamGraphVertexNonEndpoint) this).leftEdge = null;
+                } else {
+                    ((VerticalSeamGraphVertexNonEndpoint) this).leftEdge.to = newTo;
+                }
+                break;
+            case rightEdge:
+                if (newTo == null) {
+                    ((VerticalSeamGraphVertexNonEndpoint) this).rightEdge = null;
+                } else {
+                    ((VerticalSeamGraphVertexNonEndpoint) this).rightEdge.to = newTo;
+                }
+                break;
+            default:
+                break;
+        }
+
+    }
+
 
 }
 
@@ -470,14 +509,14 @@ public class DijkstraSeamFinderOptimized {
                 if (((VerticalSeamGraphVertexNonEndpoint) v).topLeft != null) {
                     VerticalSeamGraphVertex topLeft = ((VerticalSeamGraphVertexNonEndpoint) v).topLeft;
                     if (topLeft != null && deletionCase != DeletionCase.case1) {
-                        ((VerticalSeamGraphVertexNonEndpoint) topLeft).rightEdge.from = ((VerticalSeamGraphVertexNonEndpoint) v).right;
+                        ((VerticalSeamGraphVertexNonEndpoint) topLeft).rightEdge.to = ((VerticalSeamGraphVertexNonEndpoint) v).right;
                     }
                 }
 
                 if (((VerticalSeamGraphVertexNonEndpoint) v).topRight != null) {
                     VerticalSeamGraphVertex topRight = ((VerticalSeamGraphVertexNonEndpoint) v).topRight;
                     if (topRight != null && deletionCase != DeletionCase.case3) {
-                        ((VerticalSeamGraphVertexNonEndpoint) topRight).leftEdge.from = ((VerticalSeamGraphVertexNonEndpoint) v).left;
+                        ((VerticalSeamGraphVertexNonEndpoint) topRight).leftEdge.to = ((VerticalSeamGraphVertexNonEndpoint) v).left;
                     }
                 }
 
@@ -485,16 +524,17 @@ public class DijkstraSeamFinderOptimized {
                     VerticalSeamGraphVertex top = ((VerticalSeamGraphVertexNonEndpoint) v).top;
                     if (top != null && deletionCase != DeletionCase.case2) {
                         if (deletionCase == DeletionCase.case3) {
-                            ((VerticalSeamGraphVertexNonEndpoint) top).bottomEdge.from = ((VerticalSeamGraphVertexNonEndpoint) v).right;
-                            ((VerticalSeamGraphVertexNonEndpoint) top).rightEdge.from = ((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) v).right).right;
+                            ((VerticalSeamGraphVertexNonEndpoint) top).bottomEdge.to = ((VerticalSeamGraphVertexNonEndpoint) v).right;
+                            ((VerticalSeamGraphVertexNonEndpoint) top).rightEdge.to = ((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) v).right).right;
                         } else { // deletionCase  = case1
-                            ((VerticalSeamGraphVertexNonEndpoint) top).bottomEdge.from = ((VerticalSeamGraphVertexNonEndpoint) v).left;
-                            ((VerticalSeamGraphVertexNonEndpoint) top).leftEdge.from = ((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) v).left).left;
-
+                            ((VerticalSeamGraphVertexNonEndpoint) top).bottomEdge.to = ((VerticalSeamGraphVertexNonEndpoint) v).left;
+                            ((VerticalSeamGraphVertexNonEndpoint) top).leftEdge.to = ((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) v).left).left;
                         }
                     }
                 }
+
             }
+
             correctXCoordinatesOfRightVertices(v);
 
             removeSeamHelper(lastSeam);
@@ -547,14 +587,14 @@ public class DijkstraSeamFinderOptimized {
                 if (((VerticalSeamGraphVertexNonEndpoint) v).topLeft != null) {
                     VerticalSeamGraphVertex topLeft = ((VerticalSeamGraphVertexNonEndpoint) v).topLeft;
                     if (topLeft != null && deletionCase != DeletionCase.case1) {
-                        ((VerticalSeamGraphVertexNonEndpoint) topLeft).bottomRight = ((VerticalSeamGraphVertexNonEndpoint) topLeft).rightEdge.from;
+                        ((VerticalSeamGraphVertexNonEndpoint) topLeft).bottomRight = ((VerticalSeamGraphVertexNonEndpoint) topLeft).rightEdge.to;
                     }
                 }
 
                 if (((VerticalSeamGraphVertexNonEndpoint) v).topRight != null) {
                     VerticalSeamGraphVertex topRight = ((VerticalSeamGraphVertexNonEndpoint) v).topRight;
                     if (topRight != null && deletionCase != DeletionCase.case3) {
-                        ((VerticalSeamGraphVertexNonEndpoint) topRight).bottomLeft = ((VerticalSeamGraphVertexNonEndpoint) topRight).leftEdge.from;
+                        ((VerticalSeamGraphVertexNonEndpoint) topRight).bottomLeft = ((VerticalSeamGraphVertexNonEndpoint) topRight).leftEdge.to;
                     }
                 }
 
@@ -562,11 +602,11 @@ public class DijkstraSeamFinderOptimized {
                     VerticalSeamGraphVertex top = ((VerticalSeamGraphVertexNonEndpoint) v).top;
                     if (top != null && deletionCase != DeletionCase.case2) {
                         if (deletionCase == DeletionCase.case3) {
-                            ((VerticalSeamGraphVertexNonEndpoint) top).bottom = ((VerticalSeamGraphVertexNonEndpoint) top).bottomEdge.from;
-                            ((VerticalSeamGraphVertexNonEndpoint) top).bottomRight = ((VerticalSeamGraphVertexNonEndpoint) top).rightEdge.from;
+                            ((VerticalSeamGraphVertexNonEndpoint) top).bottom = ((VerticalSeamGraphVertexNonEndpoint) top).bottomEdge.to;
+                            ((VerticalSeamGraphVertexNonEndpoint) top).bottomRight = ((VerticalSeamGraphVertexNonEndpoint) top).rightEdge.to;
                         } else { // deletionCase  = case1
-                            ((VerticalSeamGraphVertexNonEndpoint) top).bottom = ((VerticalSeamGraphVertexNonEndpoint) top).bottomEdge.from;
-                            ((VerticalSeamGraphVertexNonEndpoint) top).bottomLeft = ((VerticalSeamGraphVertexNonEndpoint) top).leftEdge.from;
+                            ((VerticalSeamGraphVertexNonEndpoint) top).bottom = ((VerticalSeamGraphVertexNonEndpoint) top).bottomEdge.to;
+                            ((VerticalSeamGraphVertexNonEndpoint) top).bottomLeft = ((VerticalSeamGraphVertexNonEndpoint) top).leftEdge.to;
                         }
                     }
                 }
@@ -630,8 +670,13 @@ public class DijkstraSeamFinderOptimized {
                         if (deletionCase == DeletionCase.case3) {
 
                             if (((VerticalSeamGraphVertexNonEndpoint) top).bottom != null) {
-                                ((VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) top).bottom)).top = top;
-                                ((VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) top).bottom)).topLeft = ((VerticalSeamGraphVertexNonEndpoint) top).left;
+                                ((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) top).bottom).top = top;
+
+                                // edge case handling
+                                if (((VerticalSeamGraphVertexNonEndpoint) top).left == null) {
+                                    ((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) top).bottom).topLeft = null;
+                                }
+
                             }
 
                             if (((VerticalSeamGraphVertexNonEndpoint) top).bottomRight != null) {
@@ -642,7 +687,12 @@ public class DijkstraSeamFinderOptimized {
 
                             if (((VerticalSeamGraphVertexNonEndpoint) top).bottom != null) {
                                 ((VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) top).bottom)).top = top;
-                                ((VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexNonEndpoint) top).bottom)).topRight = ((VerticalSeamGraphVertexNonEndpoint) top).right;
+
+                                // edge case handling
+                                if (((VerticalSeamGraphVertexNonEndpoint) top).right == null) {
+                                    ((VerticalSeamGraphVertexNonEndpoint) ((VerticalSeamGraphVertexNonEndpoint) top).bottom).topRight = null;
+                                }
+
                             }
 
                             if (((VerticalSeamGraphVertexNonEndpoint) top).bottomLeft != null) {
@@ -780,6 +830,7 @@ public class DijkstraSeamFinderOptimized {
             }
 
             seam.add(val);
+            prevVal = val;
         }
 
         return seam;

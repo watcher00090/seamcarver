@@ -11,7 +11,7 @@ import java.util.Objects;
  */
 public abstract class BaseEdge<V, THIS extends BaseEdge<V, THIS>> {
     protected V from;
-    protected final V to;
+    protected V to;
     protected double weight;
 
     public BaseEdge(V from, V to, double weight) {
