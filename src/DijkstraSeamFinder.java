@@ -30,7 +30,7 @@ public class DijkstraSeamFinder implements SeamFinder {
     //  you choose for your graph
     private final ShortestPathFinder<Graph<Object, Edge<Object>>, Object, Edge<Object>> pathFinder;
     public List<Integer> lastSeam = null;
-    VerticalSeamGraphVertex topRowVertex = null;
+    //VerticalSeamGraphVertex topRowVertex = null;
 
     public DijkstraSeamFinder() {
         this.pathFinder = createPathFinder();

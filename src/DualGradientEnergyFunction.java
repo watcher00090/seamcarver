@@ -56,7 +56,6 @@ public class DualGradientEnergyFunction implements EnergyFunction {
 
     @Override
     public double apply(Picture picture, int x, int y) {
-        System.out.println("Calling DualGradientEnergyFunction::apply....");
 
         R_func r_func = new R_func(picture);
         B_func b_func = new B_func(picture);

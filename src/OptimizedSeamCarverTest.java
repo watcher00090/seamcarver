@@ -14,34 +14,39 @@ import static org.junit.jupiter.api.Assertions.*;
 public class OptimizedSeamCarverTest {
 
     public boolean checkThatEdgeEndpointsHaveCorrectCoordinates(DijkstraSeamFinderOptimized.VerticalSeamGraphOptimized G) {
-        for (Edge<VerticalSeamGraphVertex> e : ((VerticalSeamGraphVertexSource) G.start).edgeList) {
-            if (!((VerticalSeamGraphVertexNonEndpoint) e.to).top.equals(e.from)) {
+        for (Edge<SeamGraphVertex> e : ((VerticalSeamGraphVertexSource) G.start).edgeList) {
+            if (!((SeamGraphVertex) e.to).top.equals(e.from)) {
                 return false;
             }
         }
 
-        VerticalSeamGraphVertex curs = (VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexSource) G.start).edgeList.get(0).to);
+        SeamGraphVertex curs = (SeamGraphVertex) (((VerticalSeamGraphVertexSource) G.start).edgeList.get(0).to);
 
         for (int y=0; y<G.numVertVertices; ++y) {
-            VerticalSeamGraphVertex start = curs;
+            SeamGraphVertex start = curs;
 
             for (int x=0; x<G.numHorizVertices; ++x) {
 
                 // check invariants on curs
-                VerticalSeamGraphVertexNonEndpoint v = (VerticalSeamGraphVertexNonEndpoint) curs;
-                VerticalSeamGraphVertex bottomLeftVertex = v.bottomLeft;
-                VerticalSeamGraphVertex bottomVertex = v.bottom;
-                VerticalSeamGraphVertex bottomRightVertex = v.bottomRight;
+                SeamGraphVertex v = (SeamGraphVertex) curs;
 
-                if (v.leftEdge != null && !VerticalSeamGraphVertex.checkEquality(bottomLeftVertex, v.leftEdge.to)) {
+                if (v.inSeam) {
+                    System.out.println("oops, traversing a vertex in the seam!");
+                }
+
+                SeamGraphVertex bottomLeftVertex = v.bottomLeft;
+                SeamGraphVertex bottomVertex = v.bottom;
+                SeamGraphVertex bottomRightVertex = v.bottomRight;
+
+                if (v.leftEdge != null && !SeamGraphVertex.checkEquality(bottomLeftVertex, v.leftEdge.to)) {
                     return false;
                 }
 
-                if (v.bottomEdge != null && !VerticalSeamGraphVertex.checkEquality(bottomVertex, v.bottomEdge.to)) {
+                if (v.bottomEdge != null && !SeamGraphVertex.checkEquality(bottomVertex, v.bottomEdge.to)) {
                     return false;
                 }
 
-                if (v.rightEdge != null && !VerticalSeamGraphVertex.checkEquality(bottomRightVertex, v.rightEdge.to)) {
+                if (v.rightEdge != null && !SeamGraphVertex.checkEquality(bottomRightVertex, v.rightEdge.to)) {
                     return false;
                 }
 
@@ -49,7 +54,7 @@ public class OptimizedSeamCarverTest {
                     return false;
                 }
 
-                if (v.bottomEdge != null && !(((VerticalSeamGraphVertexNonEndpoint) v).bottom).isSink && !(v.bottomEdge.to.coord.y - 1 == v.coord.y)) {
+                if (v.bottomEdge != null && !(((SeamGraphVertex) v).bottom).isSink && !(v.bottomEdge.to.coord.y - 1 == v.coord.y)) {
                     return false;
                 }
 
@@ -58,35 +63,35 @@ public class OptimizedSeamCarverTest {
                 }
 
             }
-            curs = ((VerticalSeamGraphVertexNonEndpoint) start).bottom;
+            curs = ((SeamGraphVertex) start).bottom;
         }
         return true;
     }
 
     public boolean checkThatNeighborsHaveCorrectCoordinates(DijkstraSeamFinderOptimized.VerticalSeamGraphOptimized G) {
-        for (Edge<VerticalSeamGraphVertex> e : ((VerticalSeamGraphVertexSource) G.start).edgeList) {
-            if (!((VerticalSeamGraphVertexNonEndpoint) e.to).top.equals(e.from)) {
+        for (Edge<SeamGraphVertex> e : ((VerticalSeamGraphVertexSource) G.start).edgeList) {
+            if (!((SeamGraphVertex) e.to).top.equals(e.from)) {
                 return false;
             }
         }
 
-        VerticalSeamGraphVertex curs = (VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexSource) G.start).edgeList.get(0).to);
+        SeamGraphVertex curs = (SeamGraphVertex) (((VerticalSeamGraphVertexSource) G.start).edgeList.get(0).to);
 
         for (int y=0; y<G.numVertVertices; ++y) {
-            VerticalSeamGraphVertex start = curs;
+            SeamGraphVertex start = curs;
 
             for (int x=0; x<G.numHorizVertices; ++x) {
 
                 // check invariants on curs
-                VerticalSeamGraphVertexNonEndpoint v = (VerticalSeamGraphVertexNonEndpoint) curs;
-                VerticalSeamGraphVertex topVertex = v.top;
-                VerticalSeamGraphVertex topLeftVertex = v.topLeft;
-                VerticalSeamGraphVertex topRightVertex = v.topRight;
-                VerticalSeamGraphVertex bottomLeftVertex = v.bottomLeft;
-                VerticalSeamGraphVertex bottomVertex = v.bottom;
-                VerticalSeamGraphVertex bottomRightVertex = v.bottomRight;
-                VerticalSeamGraphVertex leftVertex = v.left;
-                VerticalSeamGraphVertex rightVertex = v.right;
+                SeamGraphVertex v = (SeamGraphVertex) curs;
+                SeamGraphVertex topVertex = v.top;
+                SeamGraphVertex topLeftVertex = v.topLeft;
+                SeamGraphVertex topRightVertex = v.topRight;
+                SeamGraphVertex bottomLeftVertex = v.bottomLeft;
+                SeamGraphVertex bottomVertex = v.bottom;
+                SeamGraphVertex bottomRightVertex = v.bottomRight;
+                SeamGraphVertex leftVertex = v.left;
+                SeamGraphVertex rightVertex = v.right;
 
                 if (topVertex != null && !topVertex.isSink && !(topVertex.coord.y + 1 == v.coord.y)) {
                     return false;
@@ -121,10 +126,10 @@ public class OptimizedSeamCarverTest {
                     return false;
                 }
 
-                curs = ((VerticalSeamGraphVertexNonEndpoint) curs).right;
+                curs = ((SeamGraphVertex) curs).right;
 
             }
-            curs = ((VerticalSeamGraphVertexNonEndpoint) start).bottom;
+            curs = ((SeamGraphVertex) start).bottom;
         }
 
         return true;
@@ -215,33 +220,35 @@ public class OptimizedSeamCarverTest {
 
         DijkstraSeamFinderOptimized.VerticalSeamGraphOptimized G = sf.verticalSeamGraph;
 
-        VerticalSeamGraphVertex curs = (VerticalSeamGraphVertexNonEndpoint) (((VerticalSeamGraphVertexSource) G.start).edgeList.get(0).to);
+        SeamGraphVertex curs = (SeamGraphVertex) (((VerticalSeamGraphVertexSource) G.start).edgeList.get(0).to);
 
         for (int y=0; y<G.numVertVertices; ++y) {
-            VerticalSeamGraphVertex start = curs;
+            SeamGraphVertex start = curs;
 
             for (int x=0; x<G.numHorizVertices; ++x) {
 
-                VerticalSeamGraphVertexNonEndpoint v = (VerticalSeamGraphVertexNonEndpoint) curs;
+                SeamGraphVertex v = (SeamGraphVertex) curs;
 
                 assertTrue((G.computeEnergy(v) - G.energyOfPixel(x,y)) < 1E-6);
 
-                curs = ((VerticalSeamGraphVertexNonEndpoint) curs).right;
+                curs = ((SeamGraphVertex) curs).right;
 
             }
 
-            curs = ((VerticalSeamGraphVertexNonEndpoint) start).bottom;
+            curs = ((SeamGraphVertex) start).bottom;
         }
 
     }
 
     @Test
+    // TODO: implement this method
     public void bothSeamFindersFindCorrectSeam() {
         bothSeamFindersFindCorrectSeam("small_image_1.png");
         bothSeamFindersFindCorrectSeam("small_image_2.png");
         bothSeamFindersFindCorrectSeam("small_image_3.png");
     }
 
+    // TODO: implement this method
     public void bothSeamFindersFindCorrectSeam(String filename) {
 
     }
@@ -282,12 +289,14 @@ public class OptimizedSeamCarverTest {
     }
 
     @Test
+    // TODO: implement this method
     public void removingSeamsYieldsIdenticalImages() {
         removingSeamsYieldsIdenticalImages("small_image_1.png");
         removingSeamsYieldsIdenticalImages("small_image_2.png");
         removingSeamsYieldsIdenticalImages("small_image_3.png");
     }
 
+    // TODO: implement this method
     public void removingSeamsYieldsIdenticalImages(String filename) {
         Picture picture = PictureUtils.loadPicture(filename);
         double[][] energies = SeamCarver.computeEnergies(picture, new DualGradientEnergyFunction());
@@ -299,6 +308,26 @@ public class OptimizedSeamCarverTest {
 
     @Test
     public void removingSeamsPreservesGraphInvariants() {
+        removingSeamsPreservesGraphInvariants("small_image_1.png");
+        removingSeamsPreservesGraphInvariants("small_image_2.png");
+        removingSeamsPreservesGraphInvariants("small_image_3.png");
+    }
+
+
+    @Test
+    public void removingSeamsPreservesGraphInvariantsHarderTest() {
+        removingSeamsPreservesGraphInvariants("small_image_1.png");
+        removingSeamsPreservesGraphInvariants("small_image_2.png");
+        removingSeamsPreservesGraphInvariants("small_image_3.png");
+
+        removingSeamsPreservesGraphInvariants("small_image_1.png");
+        removingSeamsPreservesGraphInvariants("small_image_2.png");
+        removingSeamsPreservesGraphInvariants("small_image_3.png");
+
+        removingSeamsPreservesGraphInvariants("small_image_1.png");
+        removingSeamsPreservesGraphInvariants("small_image_2.png");
+        removingSeamsPreservesGraphInvariants("small_image_3.png");
+
         removingSeamsPreservesGraphInvariants("small_image_1.png");
         removingSeamsPreservesGraphInvariants("small_image_2.png");
         removingSeamsPreservesGraphInvariants("small_image_3.png");
@@ -326,6 +355,69 @@ public class OptimizedSeamCarverTest {
         //assertEquals(true, checkThatEdgeEndpointsHaveCorrectCoordinates(G));
         boolean ret = checkThatNeighborsHaveCorrectCoordinates(G);
         assertEquals(true, ret);
+    }
+
+    @Test
+    public void removingSeamsPreservesGraphInvariantsHardcodedSeam2() {
+        Integer[] arr = {10, 11, 10, 10, 11, 11, 11, 12, 12, 12, 11};
+        List<Integer> seam = new ArrayList<>(Arrays.asList(arr));
+
+        Picture picture = PictureUtils.loadPicture("small_image_3.png");
+        double[][] energies = SeamCarver.computeEnergies(picture, new DualGradientEnergyFunction());
+        DijkstraSeamFinderOptimized sf = new DijkstraSeamFinderOptimized(picture, energies);
+        sf.DEBUG_MODE = true;
+        DijkstraSeamFinderOptimized.VerticalSeamGraphOptimized G = sf.verticalSeamGraph;
+
+        G.debugSeam = seam;
+        G.removeSeam(seam);
+
+        //assertEquals(true, checkThatEdgeEndpointsHaveCorrectCoordinates(G));
+        boolean ret = checkThatNeighborsHaveCorrectCoordinates(G);
+        assertEquals(true, ret);
+    }
+
+    @Test
+    public void removingSeamsPreservesGraphInvariantsHardCodedSeam3() {
+        Picture picture = PictureUtils.loadPicture("small_image_1.png");
+        double[][] energies = SeamCarver.computeEnergies(picture, new DualGradientEnergyFunction());
+        DijkstraSeamFinderOptimized sf = new DijkstraSeamFinderOptimized(picture, energies);
+        sf.DEBUG_MODE = true;
+
+        DijkstraSeamFinderOptimized.VerticalSeamGraphOptimized G = sf.verticalSeamGraph;
+
+        assertEquals(true, checkThatNeighborsHaveCorrectCoordinates(G));
+
+        Integer[] arr = {7,8,8,8,8,8,7,6,7};
+        List<Integer> seam1 = new ArrayList<>(Arrays.asList(arr));
+
+        G.debugSeam = seam1;
+        G.removeSeam(seam1);
+
+        //assertEquals(true, checkThatEdgeEndpointsHaveCorrectCoordinates(G));
+        assertEquals(true, checkThatNeighborsHaveCorrectCoordinates(G));
+
+
+    }
+
+    @Test
+    public void removingSeamsPreservesGraphInvariantsHardCodedSeam4() {
+        Picture picture = PictureUtils.loadPicture("small_image_1.png");
+        double[][] energies = SeamCarver.computeEnergies(picture, new DualGradientEnergyFunction());
+        DijkstraSeamFinderOptimized sf = new DijkstraSeamFinderOptimized(picture, energies);
+        sf.DEBUG_MODE = true;
+
+        DijkstraSeamFinderOptimized.VerticalSeamGraphOptimized G = sf.verticalSeamGraph;
+
+        assertEquals(true, checkThatNeighborsHaveCorrectCoordinates(G));
+
+        Integer arr[] = {3,4,5,6,5,6,6,5,4};
+        List<Integer> seam1 = new ArrayList<>(Arrays.asList(arr));
+
+        G.debugSeam = seam1;
+        G.removeSeam(seam1);
+
+        //assertEquals(true, checkThatEdgeEndpointsHaveCorrectCoordinates(G));
+        assertEquals(true, checkThatNeighborsHaveCorrectCoordinates(G));
     }
 
     public void removingSeamsPreservesGraphInvariants(String filename) {
