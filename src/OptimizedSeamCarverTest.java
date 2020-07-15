@@ -305,6 +305,11 @@ public class OptimizedSeamCarverTest {
     }
 
     @Test
+    public void removingSeamsPreservesGraphInvariantsLargeImage() {
+        removingSeamsPreservesGraphInvariants("large_image_1.png");
+    }
+
+    @Test
     public void removingSeamsPreservesGraphInvariantsHardcodedSeam1() {
         Integer[] arr = {0, 0, 1, 2, 3, 2, 3, 3, 2, 2, 2};
         List<Integer> seam = new ArrayList<>(Arrays.asList(arr));
