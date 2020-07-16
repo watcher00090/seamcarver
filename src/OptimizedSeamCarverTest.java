@@ -242,14 +242,14 @@ public class OptimizedSeamCarverTest {
 
     @Test
     // TODO: implement this method
-    public void bothSeamFindersFindCorrectSeam() {
-        bothSeamFindersFindCorrectSeam("small_image_1.png");
-        bothSeamFindersFindCorrectSeam("small_image_2.png");
-        bothSeamFindersFindCorrectSeam("small_image_3.png");
+    public void bothSeamFindersFindSameSeam() {
+        bothSeamFindersFindSameSeam("small_image_1.png");
+        bothSeamFindersFindSameSeam("small_image_2.png");
+        bothSeamFindersFindSameSeam("small_image_3.png");
     }
 
     // TODO: implement this method
-    public void bothSeamFindersFindCorrectSeam(String filename) {
+    public void bothSeamFindersFindSameSeam(String filename) {
 
     }
 
@@ -313,7 +313,6 @@ public class OptimizedSeamCarverTest {
         removingSeamsPreservesGraphInvariants("small_image_3.png");
     }
 
-
     @Test
     public void removingSeamsPreservesGraphInvariantsHarderTest() {
         removingSeamsPreservesGraphInvariants("small_image_1.png");
@@ -331,6 +330,31 @@ public class OptimizedSeamCarverTest {
         removingSeamsPreservesGraphInvariants("small_image_1.png");
         removingSeamsPreservesGraphInvariants("small_image_2.png");
         removingSeamsPreservesGraphInvariants("small_image_3.png");
+
+        removingSeamsPreservesGraphInvariants("small_image_1.png");
+        removingSeamsPreservesGraphInvariants("small_image_2.png");
+        removingSeamsPreservesGraphInvariants("small_image_3.png");
+        
+        removingSeamsPreservesGraphInvariants("small_image_1.png");
+        removingSeamsPreservesGraphInvariants("small_image_2.png");
+        removingSeamsPreservesGraphInvariants("small_image_3.png");
+
+        removingSeamsPreservesGraphInvariants("small_image_1.png");
+        removingSeamsPreservesGraphInvariants("small_image_2.png");
+        removingSeamsPreservesGraphInvariants("small_image_3.png");
+
+        removingSeamsPreservesGraphInvariants("small_image_1.png");
+        removingSeamsPreservesGraphInvariants("small_image_2.png");
+        removingSeamsPreservesGraphInvariants("small_image_3.png");
+
+        removingSeamsPreservesGraphInvariants("small_image_1.png");
+        removingSeamsPreservesGraphInvariants("small_image_2.png");
+        removingSeamsPreservesGraphInvariants("small_image_3.png");
+
+        removingSeamsPreservesGraphInvariants("small_image_1.png");
+        removingSeamsPreservesGraphInvariants("small_image_2.png");
+        removingSeamsPreservesGraphInvariants("small_image_3.png");
+
     }
 
     @Test

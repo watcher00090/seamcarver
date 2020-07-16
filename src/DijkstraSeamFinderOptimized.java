@@ -443,39 +443,127 @@ public class DijkstraSeamFinderOptimized {
             return v.edgeList;
         }
 
-        public void removeSeamNew(List<Integer> lastSeam) {
-            SeamGraphVertex v = verticalSeamGraph.start.edgeList.get(lastSeam.get(0)).to; // (currVertex and prevVertex as used to traverse the iamge)
+        public void removeSeam(List<Integer> lastSeam) {
+            SeamGraphVertex v = verticalSeamGraph.start.edgeList.get(lastSeam.get(0)).to; // for traversing the graph
+            start.edgeList.remove((lastSeam.get(0).intValue())); // remove the edge from the source
+
+            SeamGraphVertex v1;
+            SeamGraphVertex v2;
+
             DeletionCase deletionCase;
-            ((SeamGraphVertex) v).inSeam = true;
+            v.inSeam = true;
+
+            correctXCoordinatesOfRightVertices(v);
 
             for (int i = 1; i < lastSeam.size(); ++i) {
-
-                //SeamGraphVertex v1 =
 
                 int i1 = lastSeam.get(i-1);
                 int i2 = lastSeam.get(i);
 
+                v1 = v;
+
                 if (i1 < i2) {
-                    v = ((SeamGraphVertex) v).bottomRight;
+                    v = v.bottomRight;
                     deletionCase = DeletionCase.case1;
                 } else if (i1 > i2) {
-                    v = ((SeamGraphVertex) v).bottomLeft;
+                    v = v.bottomLeft;
                     deletionCase = DeletionCase.case3;
                 } else {
-                    v = ((SeamGraphVertex) v).bottom;
+                    v = v.bottom;
                     deletionCase = DeletionCase.case2;
                 }
 
-                ((SeamGraphVertex) v).inSeam = true;
+                v.inSeam = true;
+                v2 = v;
+                correctXCoordinatesOfRightVertices(v2);
 
+                // be wary of things like v1/v2.A.B on the RHS! (we never make changes to v1/v2.A.A, where A can be left or right)
+                if (deletionCase == DeletionCase.case1) {
+
+                    // update v1.right
+                    v1.right.left = v1.left;
+                    v1.right.bottom = v2.left;
+                    v1.right.bottomLeft = v2.left.left;
+
+                    // update v2.left
+                    v2.left.right = v2.right;
+                    v2.left.top = v1.right;
+                    v2.left.topRight = v1.right.right;
+
+                    if (v1.left != null) {
+                        // update v1.left
+                        v1.left.right = v1.right;
+
+                        // update v2.left.left
+                        v2.left.left.topRight = v1.right;
+                    }
+
+                    if (v2.right != null) {
+                        // update v1.right.right
+                        v1.right.right.bottomLeft = v2.left;
+
+                        // update v2.right
+                        v2.right.left = v2.left;
+                    }
+
+                } else if (deletionCase == DeletionCase.case3) {
+
+                    // update v1.left
+                    v1.left.right = v1.right;
+                    v1.left.bottom = v2.right;
+                    v1.left.bottomRight = v2.right.right;
+
+                    // update v2.right
+                    v2.right.left = v2.left;
+                    v2.right.top = v1.left;
+                    v2.right.topLeft = v1.left.left;
+
+                    if (v1.right != null) {
+                        // update v1.right
+                        v1.right.left = v1.left;
+
+                        // update v2.right.right
+                        v2.right.right.topLeft = v1.left;
+
+                    } if (v2.left != null) {
+                        // update v2.left
+                        v2.left.right = v2.right;
+
+                        // update v1.left.left
+                        v1.left.left.bottomRight = v2.right;
+                    }
+
+                } else { // case2
+
+                    if (v1.left != null) {
+                        // update v1.left
+                        v1.left.right = v1.right;
+                        v1.left.bottomRight = v2.right;
+
+                        // update v2.left
+                        v2.left.right = v2.right;
+                        v2.left.topRight = v1.right;
+                    }
+
+                    if (v1.right != null) {
+                        // update v1.right
+                        v1.right.left = v1.left;
+                        v1.right.bottomLeft = v2.left;
+
+                        // update v2.right
+                        v2.right.left = v2.left;
+                        v2.right.topLeft = v1.left;
+                    }
+
+                }
 
             }
 
-            // remove edge from seam
+            this.numHorizVertices--;
         }
 
         // will always be passed in an arrayList
-        public void removeSeam(List<Integer> lastSeam) {
+        public void removeSeamOld(List<Integer> lastSeam) {
 
             if (verticalSeamGraph == null) {
                 System.out.println("Internal error, the VerticalSeamGraph has not been initialized!\"");
