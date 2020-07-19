@@ -296,11 +296,11 @@ public class DijkstraSeamFinderOptimized {
     private final ShortestPathFinder<Graph<SeamGraphVertex, Edge<SeamGraphVertex>>, SeamGraphVertex, Edge<SeamGraphVertex>> pathFinder;
     public List<Integer> lastSeam = null;
     public SeamGraphVertex topRowVertex = null;
-    public VerticalSeamGraphOptimized verticalSeamGraph;
+    public SeamGraphOptimized verticalSeamGraph;
 
     public DijkstraSeamFinderOptimized(Picture picture, double[][] energies) {
         this.pathFinder = createPathFinder();
-        this.verticalSeamGraph = new VerticalSeamGraphOptimized(picture, energies);
+        this.verticalSeamGraph = new SeamGraphOptimized(picture, energies);
     }
 
     protected <G extends Graph<V, Edge<V>>, V> ShortestPathFinder<G, V, Edge<V>> createPathFinder() {
@@ -316,7 +316,7 @@ public class DijkstraSeamFinderOptimized {
      * The weight of an edge is the cost of the 'to' vertex with the exception of the
      * edges from the bottom vertices to the end vertex, which all have weight 0.
      */
-    public class VerticalSeamGraphOptimized implements Graph<SeamGraphVertex, Edge<SeamGraphVertex>> {
+    public class SeamGraphOptimized implements Graph<SeamGraphVertex, Edge<SeamGraphVertex>> {
         VerticalSeamGraphVertexSource start;
         VerticalSeamGraphVertexSink end;
         int numHorizVertices;
@@ -326,7 +326,7 @@ public class DijkstraSeamFinderOptimized {
         public List<Integer> debugSeam;
 
         // weight of edge = energy of 'from' vertex
-        public VerticalSeamGraphOptimized(Picture picture, double[][] energies) {
+        public SeamGraphOptimized(Picture picture, double[][] energies) {
             this.energyFunction = new DualGradientEnergyFunctionNodal();
             this.energies = energies;
 

@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class OptimizedSeamCarverTest {
 
-    public boolean checkThatEdgeEndpointsHaveCorrectCoordinates(DijkstraSeamFinderOptimized.VerticalSeamGraphOptimized G) {
+    public boolean checkThatEdgeEndpointsHaveCorrectCoordinates(DijkstraSeamFinderOptimized.SeamGraphOptimized G) {
         for (Edge<SeamGraphVertex> e : ((VerticalSeamGraphVertexSource) G.start).edgeList) {
             if (!((SeamGraphVertex) e.to).top.equals(e.from)) {
                 return false;
@@ -69,7 +69,7 @@ public class OptimizedSeamCarverTest {
         return true;
     }
 
-    public boolean checkThatNeighborsHaveCorrectCoordinates(DijkstraSeamFinderOptimized.VerticalSeamGraphOptimized G) {
+    public boolean checkThatNeighborsHaveCorrectCoordinates(DijkstraSeamFinderOptimized.SeamGraphOptimized G) {
         for (Edge<SeamGraphVertex> e : ((VerticalSeamGraphVertexSource) G.start).edgeList) {
             if (!((SeamGraphVertex) e.to).top.equals(e.from)) {
                 return false;
@@ -219,7 +219,7 @@ public class OptimizedSeamCarverTest {
         double[][] energies = SeamCarver.computeEnergies(picture, new DualGradientEnergyFunction());
         DijkstraSeamFinderOptimized sf = new DijkstraSeamFinderOptimized(picture, energies);
 
-        DijkstraSeamFinderOptimized.VerticalSeamGraphOptimized G = sf.verticalSeamGraph;
+        DijkstraSeamFinderOptimized.SeamGraphOptimized G = sf.verticalSeamGraph;
 
         SeamGraphVertex curs = (SeamGraphVertex) (((VerticalSeamGraphVertexSource) G.start).edgeList.get(0).to);
 
@@ -266,7 +266,7 @@ public class OptimizedSeamCarverTest {
         double[][] energies = SeamCarver.computeEnergies(picture, new DualGradientEnergyFunction());
         DijkstraSeamFinderOptimized sf = new DijkstraSeamFinderOptimized(picture, energies);
 
-        DijkstraSeamFinderOptimized.VerticalSeamGraphOptimized G = sf.verticalSeamGraph;
+        DijkstraSeamFinderOptimized.SeamGraphOptimized G = sf.verticalSeamGraph;
 
         int i = 0;
         do {
@@ -303,68 +303,68 @@ public class OptimizedSeamCarverTest {
         double[][] energies = SeamCarver.computeEnergies(picture, new DualGradientEnergyFunction());
         DijkstraSeamFinderOptimized sf = new DijkstraSeamFinderOptimized(picture, energies);
 
-        DijkstraSeamFinderOptimized.VerticalSeamGraphOptimized G = sf.verticalSeamGraph;
+        DijkstraSeamFinderOptimized.SeamGraphOptimized G = sf.verticalSeamGraph;
         List<Integer> seam1 = sf.generateRandomVerticalSeam();
     }
 
     @Test
-    public void removingSeamsPreservesGraphInvariants() {
-        removingSeamsPreservesGraphInvariants("small_image_1.png");
-        removingSeamsPreservesGraphInvariants("small_image_2.png");
-        removingSeamsPreservesGraphInvariants("small_image_3.png");
+    public void removingVerticalSeamsPreservesGraphInvariants() {
+        removingVerticalSeamsPreservesGraphInvariants("small_image_1.png");
+        removingVerticalSeamsPreservesGraphInvariants("small_image_2.png");
+        removingVerticalSeamsPreservesGraphInvariants("small_image_3.png");
     }
 
     @Test
-    public void removingSeamsPreservesGraphInvariantsHarderTest() {
-        removingSeamsPreservesGraphInvariants("small_image_1.png");
-        removingSeamsPreservesGraphInvariants("small_image_2.png");
-        removingSeamsPreservesGraphInvariants("small_image_3.png");
+    public void removingVerticalSeamsPreservesGraphInvariantsHarderTest() {
+        removingVerticalSeamsPreservesGraphInvariants("small_image_1.png");
+        removingVerticalSeamsPreservesGraphInvariants("small_image_2.png");
+        removingVerticalSeamsPreservesGraphInvariants("small_image_3.png");
 
-        removingSeamsPreservesGraphInvariants("small_image_1.png");
-        removingSeamsPreservesGraphInvariants("small_image_2.png");
-        removingSeamsPreservesGraphInvariants("small_image_3.png");
+        removingVerticalSeamsPreservesGraphInvariants("small_image_1.png");
+        removingVerticalSeamsPreservesGraphInvariants("small_image_2.png");
+        removingVerticalSeamsPreservesGraphInvariants("small_image_3.png");
 
-        removingSeamsPreservesGraphInvariants("small_image_1.png");
-        removingSeamsPreservesGraphInvariants("small_image_2.png");
-        removingSeamsPreservesGraphInvariants("small_image_3.png");
+        removingVerticalSeamsPreservesGraphInvariants("small_image_1.png");
+        removingVerticalSeamsPreservesGraphInvariants("small_image_2.png");
+        removingVerticalSeamsPreservesGraphInvariants("small_image_3.png");
 
-        removingSeamsPreservesGraphInvariants("small_image_1.png");
-        removingSeamsPreservesGraphInvariants("small_image_2.png");
-        removingSeamsPreservesGraphInvariants("small_image_3.png");
+        removingVerticalSeamsPreservesGraphInvariants("small_image_1.png");
+        removingVerticalSeamsPreservesGraphInvariants("small_image_2.png");
+        removingVerticalSeamsPreservesGraphInvariants("small_image_3.png");
 
-        removingSeamsPreservesGraphInvariants("small_image_1.png");
-        removingSeamsPreservesGraphInvariants("small_image_2.png");
-        removingSeamsPreservesGraphInvariants("small_image_3.png");
+        removingVerticalSeamsPreservesGraphInvariants("small_image_1.png");
+        removingVerticalSeamsPreservesGraphInvariants("small_image_2.png");
+        removingVerticalSeamsPreservesGraphInvariants("small_image_3.png");
 
-        removingSeamsPreservesGraphInvariants("small_image_1.png");
-        removingSeamsPreservesGraphInvariants("small_image_2.png");
-        removingSeamsPreservesGraphInvariants("small_image_3.png");
+        removingVerticalSeamsPreservesGraphInvariants("small_image_1.png");
+        removingVerticalSeamsPreservesGraphInvariants("small_image_2.png");
+        removingVerticalSeamsPreservesGraphInvariants("small_image_3.png");
 
-        removingSeamsPreservesGraphInvariants("small_image_1.png");
-        removingSeamsPreservesGraphInvariants("small_image_2.png");
-        removingSeamsPreservesGraphInvariants("small_image_3.png");
+        removingVerticalSeamsPreservesGraphInvariants("small_image_1.png");
+        removingVerticalSeamsPreservesGraphInvariants("small_image_2.png");
+        removingVerticalSeamsPreservesGraphInvariants("small_image_3.png");
 
-        removingSeamsPreservesGraphInvariants("small_image_1.png");
-        removingSeamsPreservesGraphInvariants("small_image_2.png");
-        removingSeamsPreservesGraphInvariants("small_image_3.png");
+        removingVerticalSeamsPreservesGraphInvariants("small_image_1.png");
+        removingVerticalSeamsPreservesGraphInvariants("small_image_2.png");
+        removingVerticalSeamsPreservesGraphInvariants("small_image_3.png");
 
-        removingSeamsPreservesGraphInvariants("small_image_1.png");
-        removingSeamsPreservesGraphInvariants("small_image_2.png");
-        removingSeamsPreservesGraphInvariants("small_image_3.png");
+        removingVerticalSeamsPreservesGraphInvariants("small_image_1.png");
+        removingVerticalSeamsPreservesGraphInvariants("small_image_2.png");
+        removingVerticalSeamsPreservesGraphInvariants("small_image_3.png");
 
-        removingSeamsPreservesGraphInvariants("small_image_1.png");
-        removingSeamsPreservesGraphInvariants("small_image_2.png");
-        removingSeamsPreservesGraphInvariants("small_image_3.png");
+        removingVerticalSeamsPreservesGraphInvariants("small_image_1.png");
+        removingVerticalSeamsPreservesGraphInvariants("small_image_2.png");
+        removingVerticalSeamsPreservesGraphInvariants("small_image_3.png");
 
     }
 
     @Test
-    public void removingSeamsPreservesGraphInvariantsLargeImage() {
-        removingSeamsPreservesGraphInvariants("large_image_1.png");
+    public void removingVerticalSeamsPreservesGraphInvariantsLargeImage() {
+        removingVerticalSeamsPreservesGraphInvariants("large_image_1.png");
     }
 
     @Test
-    public void removingSeamsPreservesGraphInvariantsHardcodedSeam1() {
+    public void removingVerticalSeamsPreservesGraphInvariantsHardcodedSeam1() {
         Integer[] arr = {0, 0, 1, 2, 3, 2, 3, 3, 2, 2, 2};
         List<Integer> seam = new ArrayList<>(Arrays.asList(arr));
 
@@ -372,7 +372,7 @@ public class OptimizedSeamCarverTest {
         double[][] energies = SeamCarver.computeEnergies(picture, new DualGradientEnergyFunction());
         DijkstraSeamFinderOptimized sf = new DijkstraSeamFinderOptimized(picture, energies);
         sf.DEBUG_MODE = true;
-        DijkstraSeamFinderOptimized.VerticalSeamGraphOptimized G = sf.verticalSeamGraph;
+        DijkstraSeamFinderOptimized.SeamGraphOptimized G = sf.verticalSeamGraph;
 
         G.debugSeam = seam;
         G.removeSeam(seam);
@@ -383,7 +383,7 @@ public class OptimizedSeamCarverTest {
     }
 
     @Test
-    public void removingSeamsPreservesGraphInvariantsHardcodedSeam2() {
+    public void removingVerticalSeamsPreservesGraphInvariantsHardcodedSeam2() {
         Integer[] arr = {10, 11, 10, 10, 11, 11, 11, 12, 12, 12, 11};
         List<Integer> seam = new ArrayList<>(Arrays.asList(arr));
 
@@ -391,7 +391,7 @@ public class OptimizedSeamCarverTest {
         double[][] energies = SeamCarver.computeEnergies(picture, new DualGradientEnergyFunction());
         DijkstraSeamFinderOptimized sf = new DijkstraSeamFinderOptimized(picture, energies);
         sf.DEBUG_MODE = true;
-        DijkstraSeamFinderOptimized.VerticalSeamGraphOptimized G = sf.verticalSeamGraph;
+        DijkstraSeamFinderOptimized.SeamGraphOptimized G = sf.verticalSeamGraph;
 
         G.debugSeam = seam;
         G.removeSeam(seam);
@@ -402,13 +402,13 @@ public class OptimizedSeamCarverTest {
     }
 
     @Test
-    public void removingSeamsPreservesGraphInvariantsHardCodedSeam3() {
+    public void removingVerticalSeamsPreservesGraphInvariantsHardCodedSeam3() {
         Picture picture = PictureUtils.loadPicture("small_image_1.png");
         double[][] energies = SeamCarver.computeEnergies(picture, new DualGradientEnergyFunction());
         DijkstraSeamFinderOptimized sf = new DijkstraSeamFinderOptimized(picture, energies);
         sf.DEBUG_MODE = true;
 
-        DijkstraSeamFinderOptimized.VerticalSeamGraphOptimized G = sf.verticalSeamGraph;
+        DijkstraSeamFinderOptimized.SeamGraphOptimized G = sf.verticalSeamGraph;
 
         assertEquals(true, checkThatNeighborsHaveCorrectCoordinates(G));
 
@@ -425,13 +425,13 @@ public class OptimizedSeamCarverTest {
     }
 
     @Test
-    public void removingSeamsPreservesGraphInvariantsHardCodedSeam4() {
+    public void removingVerticalSeamsPreservesGraphInvariantsHardCodedSeam4() {
         Picture picture = PictureUtils.loadPicture("small_image_1.png");
         double[][] energies = SeamCarver.computeEnergies(picture, new DualGradientEnergyFunction());
         DijkstraSeamFinderOptimized sf = new DijkstraSeamFinderOptimized(picture, energies);
         sf.DEBUG_MODE = true;
 
-        DijkstraSeamFinderOptimized.VerticalSeamGraphOptimized G = sf.verticalSeamGraph;
+        DijkstraSeamFinderOptimized.SeamGraphOptimized G = sf.verticalSeamGraph;
 
         assertEquals(true, checkThatNeighborsHaveCorrectCoordinates(G));
 
@@ -445,13 +445,13 @@ public class OptimizedSeamCarverTest {
         assertEquals(true, checkThatNeighborsHaveCorrectCoordinates(G));
     }
 
-    public void removingSeamsPreservesGraphInvariants(String filename) {
+    public void removingVerticalSeamsPreservesGraphInvariants(String filename) {
         Picture picture = PictureUtils.loadPicture(filename);
         double[][] energies = SeamCarver.computeEnergies(picture, new DualGradientEnergyFunction());
         DijkstraSeamFinderOptimized sf = new DijkstraSeamFinderOptimized(picture, energies);
         sf.DEBUG_MODE = true;
 
-        DijkstraSeamFinderOptimized.VerticalSeamGraphOptimized G = sf.verticalSeamGraph;
+        DijkstraSeamFinderOptimized.SeamGraphOptimized G = sf.verticalSeamGraph;
 
         assertEquals(true, checkThatNeighborsHaveCorrectCoordinates(G));
 
@@ -482,7 +482,7 @@ public class OptimizedSeamCarverTest {
         Picture picture = PictureUtils.loadPicture("small_image_1.png");
         double[][] energies = SeamCarver.computeEnergies(picture, new DualGradientEnergyFunction());
         DijkstraSeamFinderOptimized sf = new DijkstraSeamFinderOptimized(picture, energies);
-        DijkstraSeamFinderOptimized.VerticalSeamGraphOptimized G = sf.verticalSeamGraph;
+        DijkstraSeamFinderOptimized.SeamGraphOptimized G = sf.verticalSeamGraph;
 
         for (int i=0; i<50; ++i) {
             List<Integer> seam = sf.generateRandomVerticalSeam();
