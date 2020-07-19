@@ -62,22 +62,23 @@ public class DijkstraShortestPathFinder<G extends Graph<V, E>, V, E extends Base
             }
 
             for (E e : weightedGraph.outgoingEdgesFrom(from)) {
-                V to = e.to();
+                if (e != null) {
+                    V to = e.to();
 
-                double oldDist = distTo.containsKey(to) ? distTo.get(to) : Double.POSITIVE_INFINITY;
-                double newDist = distTo.get(from) + e.weight();
+                    double oldDist = distTo.containsKey(to) ? distTo.get(to) : Double.POSITIVE_INFINITY;
+                    double newDist = distTo.get(from) + e.weight();
 
-                if (newDist < oldDist) {
-                    predecessorEdge.put(to, e);
-                    distTo.put(to, newDist);
+                    if (newDist < oldDist) {
+                        predecessorEdge.put(to, e);
+                        distTo.put(to, newDist);
 
-                    // change value of 'to' in distances table
-                    if (orderedPerimeter.contains(to)) {
-                        orderedPerimeter.changePriority(to, newDist);
-                    } else {
-                        orderedPerimeter.add(to, newDist);
+                        // change value of 'to' in distances table
+                        if (orderedPerimeter.contains(to)) {
+                            orderedPerimeter.changePriority(to, newDist);
+                        } else {
+                            orderedPerimeter.add(to, newDist);
+                        }
                     }
-
                 }
             }
         }

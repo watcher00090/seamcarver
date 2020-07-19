@@ -3,6 +3,7 @@ package sample;
 import edu.princeton.cs.algs4.Picture;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.function.Function;
 import java.util.concurrent.ThreadLocalRandom;
@@ -11,12 +12,16 @@ enum DifferenceType {
     CentralDifference, ForwardDifference, BackwardDifference;
 }
 
+enum SeamGraphVertexEdgeDescriptor {
+    bottomLeftEdge, bottomEdge, bottomRightEdge, rightEdge, topRightEdge
+}
+
 enum Dir {
     x, y;
 }
 
-enum VerticalSeamGraphEdgeLocator {
-    leftEdge, bottomEdge, rightEdge;
+enum SeamGraphEdgeLocator {
+    bottomLeftEdge, bottomEdge, bottomRightEdge, rightEdge, topRightEdge;
 }
 
 class RedColorFunction implements Function<SeamGraphVertex, Integer> {
@@ -51,7 +56,8 @@ enum DeletionCase {case1, case2, case3};
 
 class SeamGraphVertex {
 
-    public ArrayList<Edge<SeamGraphVertex>> edgeList;
+    public ArrayList<Edge<SeamGraphVertex>> edgeList; // only sources use this
+    public HashMap<SeamGraphVertexEdgeDescriptor, Edge<SeamGraphVertex>> edges;
 
     public SeamGraphVertex topLeft = null;
     public SeamGraphVertex top = null;
@@ -93,10 +99,7 @@ class SeamGraphVertex {
         this.rgb = rgb;
     }
 
-
-    public SeamGraphVertex() {
-
-    }
+    public SeamGraphVertex() {}
 
     public int getRGB() {
         return this.rgb;
@@ -116,9 +119,9 @@ class SeamGraphVertex {
         }
     }
 
-    public void updateVerticalSeamGraphEdgeTo(VerticalSeamGraphEdgeLocator locator, SeamGraphVertex newTo) {
+    public void updateSeamGraphEdgeTo(SeamGraphEdgeLocator locator, SeamGraphVertex newTo) {
         if (this.isSource || this.isSink) {
-            System.out.println("Internal error, updateVerticalSeamGraphEdgeTo called on a source or sink!");
+            System.out.println("Internal error, updateSeamGraphEdgeTo called on a source or sink!");
             System.exit(1);
         }
 
@@ -130,14 +133,14 @@ class SeamGraphVertex {
                     ((SeamGraphVertex) this).bottomEdge.to = newTo;
                 }
                 break;
-            case leftEdge:
+            case bottomLeftEdge:
                 if (newTo == null) {
                     ((SeamGraphVertex) this).leftEdge = null;
                 } else {
                     ((SeamGraphVertex) this).leftEdge.to = newTo;
                 }
                 break;
-            case rightEdge:
+            case bottomRightEdge:
                 if (newTo == null) {
                     ((SeamGraphVertex) this).rightEdge = null;
                 } else {
@@ -147,8 +150,8 @@ class SeamGraphVertex {
             default:
                 break;
         }
-
     }
+
 }
 
 class VerticalSeamGraphVertexSource extends SeamGraphVertex {
@@ -442,7 +445,21 @@ public class DijkstraSeamFinderOptimized {
         }
 
         public Collection<Edge<SeamGraphVertex>> outgoingEdgesFrom(SeamGraphVertex v) {
-            return v.edgeList;
+            if (v.isSource) {
+                return v.edgeList;
+            } else {
+                ArrayList<Edge<SeamGraphVertex>> edges = new ArrayList<>();
+                if (v.bottomLeft != null) {
+                    edges.add(v.leftEdge);
+                }
+                if (v.bottom != null) {
+                    edges.add(v.bottomEdge);
+                }
+                if (v.bottomRight != null) {
+                    edges.add(v.rightEdge);
+                }
+                return edges;
+            }
         }
 
         public void removeSeam(List<Integer> lastSeam) {
@@ -862,13 +879,7 @@ public class DijkstraSeamFinderOptimized {
     }
 
 
-
-
-    public List<Integer> findVerticalSeam(double[][] energies) {
-        if (energies.length == 0 || energies[0].length == 0) {
-            return new ArrayList<Integer>();
-        }
-
+    public List<Integer> findVerticalSeam() {
         List<Integer> ret = new ArrayList<>();
 
         DijkstraShortestPathFinder<Graph<SeamGraphVertex, Edge<SeamGraphVertex>>, SeamGraphVertex, Edge<SeamGraphVertex>> pf;
@@ -876,7 +887,7 @@ public class DijkstraSeamFinderOptimized {
         ShortestPath<SeamGraphVertex, Edge<SeamGraphVertex>> sp;
         sp = pf.findShortestPath(verticalSeamGraph, verticalSeamGraph.start, verticalSeamGraph.end);
         for (SeamGraphVertex vertex : sp.vertices()) {
-            if (!vertex.equals(verticalSeamGraph.start) && !vertex.equals(verticalSeamGraph.end)) {
+            if (!vertex.isSource && !vertex.isSink) {
                 ret.add(vertex.coord.x);
                 if (vertex.coord.y == 0) {
                     topRowVertex = vertex;
@@ -884,7 +895,7 @@ public class DijkstraSeamFinderOptimized {
             }
         }
 
-        verticalSeamGraph.removeSeam(ret);
+        //verticalSeamGraph.removeSeam(ret);
 
         return ret;
     }

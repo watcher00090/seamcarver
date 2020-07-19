@@ -251,7 +251,23 @@ public class OptimizedSeamCarverTest {
 
     // TODO: implement this method
     public void bothSeamFindersFindSameSeam(String filename) {
+        Picture picture = PictureUtils.loadPicture(filename);
+        double[][] energies = SeamCarver.computeEnergies(picture, new DualGradientEnergyFunction());
 
+        DijkstraSeamFinderOptimized sf = new DijkstraSeamFinderOptimized(picture, energies);
+        List<Integer> seamA = sf.findVerticalSeam();
+
+        DijkstraSeamFinder sf2 = new DijkstraSeamFinder();
+        List<Integer> seamB = sf2.findVerticalSeam(energies);
+
+        assertTrue(seamA.size() == seamB.size());
+        for (int i=0; i<seamA.size(); ++i) {
+            int A = seamA.get(i).intValue();
+            int B =  seamB.get(i).intValue();
+            System.out.print( (A - B) + ", ");
+            //assertTrue(seamA.get(i).intValue() == seamB.get(i).intValue());
+        }
+        System.out.println();
     }
 
     @Test
