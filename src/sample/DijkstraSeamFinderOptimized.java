@@ -69,9 +69,11 @@ class SeamGraphVertex {
     public SeamGraphVertex bottomRight = null;
 
     // if an edge is non null, both it's 'from' and 'to' vertices will be non-null
-    public Edge<SeamGraphVertex> leftEdge;
+    public Edge<SeamGraphVertex> bottomLeftEdge;
     public Edge<SeamGraphVertex> bottomEdge;
+    public Edge<SeamGraphVertex> bottomRightEdge;
     public Edge<SeamGraphVertex> rightEdge;
+    public Edge<SeamGraphVertex> topRightEdge;
 
     public boolean inSeam = false;
 
@@ -119,8 +121,8 @@ class SeamGraphVertex {
         }
     }
 
-    public void updateSeamGraphEdgeTo(SeamGraphEdgeLocator locator, SeamGraphVertex newTo) {
-        if (this.isSource || this.isSink) {
+    public static void updateSeamGraphEdgeTo(SeamGraphEdgeLocator locator, SeamGraphVertex from, SeamGraphVertex newTo) {
+        if (from.isSource || from.isSink) {
             System.out.println("Internal error, updateSeamGraphEdgeTo called on a source or sink!");
             System.exit(1);
         }
@@ -128,25 +130,37 @@ class SeamGraphVertex {
         switch (locator) {
             case bottomEdge:
                 if (newTo == null) {
-                    ((SeamGraphVertex) this).bottomEdge = null;
+                    from.bottomEdge = null;
                 } else {
-                    ((SeamGraphVertex) this).bottomEdge.to = newTo;
+                    from.bottomEdge.to = newTo;
                 }
                 break;
             case bottomLeftEdge:
                 if (newTo == null) {
-                    ((SeamGraphVertex) this).leftEdge = null;
+                    from.bottomLeftEdge = null;
                 } else {
-                    ((SeamGraphVertex) this).leftEdge.to = newTo;
+                    from.bottomLeftEdge.to = newTo;
                 }
                 break;
             case bottomRightEdge:
                 if (newTo == null) {
-                    ((SeamGraphVertex) this).rightEdge = null;
+                    from.bottomRightEdge = null;
                 } else {
-                    ((SeamGraphVertex) this).rightEdge.to = newTo;
+                    from.bottomRightEdge.to = newTo;
                 }
                 break;
+            case rightEdge:
+                if (newTo == null) {
+                    from.rightEdge = null;
+                } else {
+                    from.rightEdge.to = newTo;
+                }
+            case topRightEdge:
+                if (newTo == null) {
+                    from.topRightEdge = null;
+                } else {
+                    from.topRightEdge.to = newTo;
+                }
             default:
                 break;
         }
@@ -363,7 +377,7 @@ public class DijkstraSeamFinderOptimized {
                         currRow[x] = new SeamGraphVertex(new Pair<Integer>(x, y), picture.getRGB(x, y));
 
                         if (x > 0) {
-                            currRow[x].leftEdge = new Edge<SeamGraphVertex>(currRow[x], prevRow[x - 1], energyOfPixel(x, y));
+                            currRow[x].bottomLeftEdge = new Edge<SeamGraphVertex>(currRow[x], prevRow[x - 1], energyOfPixel(x, y));
                             currRow[x].bottomLeft = prevRow[x - 1];
                             prevRow[x - 1].topRight = currRow[x];
                         }
@@ -371,14 +385,14 @@ public class DijkstraSeamFinderOptimized {
                         currRow[x].bottomEdge = new Edge<SeamGraphVertex>(currRow[x], prevRow[x], energyOfPixel(x, y));
 
                         if (x < numHorizVertices - 1) {
-                            currRow[x].rightEdge = new Edge<SeamGraphVertex>(currRow[x], prevRow[x + 1], energyOfPixel(x, y));
+                            currRow[x].bottomRightEdge = new Edge<SeamGraphVertex>(currRow[x], prevRow[x + 1], energyOfPixel(x, y));
                             currRow[x].bottomRight = prevRow[x + 1];
                             prevRow[x + 1].topLeft = currRow[x];
                         }
 
-                        currRow[x].edgeList.add(currRow[x].leftEdge);
+                        currRow[x].edgeList.add(currRow[x].bottomLeftEdge);
                         currRow[x].edgeList.add(currRow[x].bottomEdge);
-                        currRow[x].edgeList.add(currRow[x].rightEdge);
+                        currRow[x].edgeList.add(currRow[x].bottomRightEdge);
 
                         currRow[x].bottom = prevRow[x];
                         prevRow[x].top = currRow[x];
@@ -450,13 +464,13 @@ public class DijkstraSeamFinderOptimized {
             } else {
                 ArrayList<Edge<SeamGraphVertex>> edges = new ArrayList<>();
                 if (v.bottomLeft != null) {
-                    edges.add(v.leftEdge);
+                    edges.add(v.bottomLeftEdge);
                 }
                 if (v.bottom != null) {
                     edges.add(v.bottomEdge);
                 }
                 if (v.bottomRight != null) {
-                    edges.add(v.rightEdge);
+                    edges.add(v.bottomRightEdge);
                 }
                 return edges;
             }
@@ -501,8 +515,14 @@ public class DijkstraSeamFinderOptimized {
 
                     // update v1.right
                     v1.right.left = v1.left;
+
+
                     v1.right.bottom = v2.left;
+
+
                     v1.right.bottomLeft = v2.left.left;
+
+
 
                     // update v2.left
                     v2.left.right = v2.right;
@@ -622,14 +642,14 @@ public class DijkstraSeamFinderOptimized {
                 if (((SeamGraphVertex) v).topLeft != null) {
                     SeamGraphVertex topLeft = ((SeamGraphVertex) v).topLeft;
                     if (topLeft != null && deletionCase != DeletionCase.case1) {
-                        ((SeamGraphVertex) topLeft).rightEdge.to = ((SeamGraphVertex) v).right;
+                        ((SeamGraphVertex) topLeft).bottomRightEdge.to = ((SeamGraphVertex) v).right;
                     }
                 }
 
                 if (((SeamGraphVertex) v).topRight != null) {
                     SeamGraphVertex topRight = ((SeamGraphVertex) v).topRight;
                     if (topRight != null && deletionCase != DeletionCase.case3) {
-                        ((SeamGraphVertex) topRight).leftEdge.to = ((SeamGraphVertex) v).left;
+                        ((SeamGraphVertex) topRight).bottomLeftEdge.to = ((SeamGraphVertex) v).left;
                     }
                 }
 
@@ -638,10 +658,10 @@ public class DijkstraSeamFinderOptimized {
                     if (top != null && deletionCase != DeletionCase.case2) {
                         if (deletionCase == DeletionCase.case3) {
                             ((SeamGraphVertex) top).bottomEdge.to = ((SeamGraphVertex) v).right;
-                            ((SeamGraphVertex) top).rightEdge.to = ((SeamGraphVertex) ((SeamGraphVertex) v).right).right;
+                            ((SeamGraphVertex) top).bottomRightEdge.to = ((SeamGraphVertex) ((SeamGraphVertex) v).right).right;
                         } else { // deletionCase  = case1
                             ((SeamGraphVertex) top).bottomEdge.to = ((SeamGraphVertex) v).left;
-                            ((SeamGraphVertex) top).leftEdge.to = ((SeamGraphVertex) ((SeamGraphVertex) v).left).left;
+                            ((SeamGraphVertex) top).bottomLeftEdge.to = ((SeamGraphVertex) ((SeamGraphVertex) v).left).left;
                         }
                     }
                 }
@@ -701,14 +721,14 @@ public class DijkstraSeamFinderOptimized {
                 if (((SeamGraphVertex) v).topLeft != null) {
                     SeamGraphVertex topLeft = ((SeamGraphVertex) v).topLeft;
                     if (topLeft != null && deletionCase != DeletionCase.case1) {
-                        ((SeamGraphVertex) topLeft).bottomRight = ((SeamGraphVertex) topLeft).rightEdge.to;
+                        ((SeamGraphVertex) topLeft).bottomRight = ((SeamGraphVertex) topLeft).bottomRightEdge.to;
                     }
                 }
 
                 if (((SeamGraphVertex) v).topRight != null) {
                     SeamGraphVertex topRight = ((SeamGraphVertex) v).topRight;
                     if (topRight != null && deletionCase != DeletionCase.case3) {
-                        ((SeamGraphVertex) topRight).bottomLeft = ((SeamGraphVertex) topRight).leftEdge.to;
+                        ((SeamGraphVertex) topRight).bottomLeft = ((SeamGraphVertex) topRight).bottomLeftEdge.to;
                     }
                 }
 
@@ -717,10 +737,10 @@ public class DijkstraSeamFinderOptimized {
                     if (top != null && deletionCase != DeletionCase.case2) {
                         if (deletionCase == DeletionCase.case3) {
                             ((SeamGraphVertex) top).bottom = ((SeamGraphVertex) top).bottomEdge.to;
-                            ((SeamGraphVertex) top).bottomRight = ((SeamGraphVertex) top).rightEdge.to;
+                            ((SeamGraphVertex) top).bottomRight = ((SeamGraphVertex) top).bottomRightEdge.to;
                         } else { // deletionCase  = case1
                             ((SeamGraphVertex) top).bottom = ((SeamGraphVertex) top).bottomEdge.to;
-                            ((SeamGraphVertex) top).bottomLeft = ((SeamGraphVertex) top).leftEdge.to;
+                            ((SeamGraphVertex) top).bottomLeft = ((SeamGraphVertex) top).bottomLeftEdge.to;
                         }
                     }
                 }

@@ -38,28 +38,26 @@ public class OptimizedSeamCarverTest {
                 SeamGraphVertex bottomLeftVertex = v.bottomLeft;
                 SeamGraphVertex bottomVertex = v.bottom;
                 SeamGraphVertex bottomRightVertex = v.bottomRight;
+                SeamGraphVertex rightVertex = v.bottomRight;
+                SeamGraphVertex topRightVertex = v.bottomRight;
 
-                if (v.leftEdge != null && !SeamGraphVertex.checkEquality(bottomLeftVertex, v.leftEdge.to)) {
+                if (v.bottomLeftEdge != null && !SeamGraphVertex.checkEquality(bottomLeftVertex, v.bottomLeftEdge.to)) {
                     return false;
                 }
 
-                if (v.bottomEdge != null && !SeamGraphVertex.checkEquality(bottomVertex, v.bottomEdge.to)) {
+                if (v.bottomEdge != null && !v.bottom.isSink && !SeamGraphVertex.checkEquality(bottomVertex, v.bottomEdge.to)) {
                     return false;
                 }
 
-                if (v.rightEdge != null && !SeamGraphVertex.checkEquality(bottomRightVertex, v.rightEdge.to)) {
+                if (v.bottomRightEdge != null && !SeamGraphVertex.checkEquality(bottomRightVertex, v.bottomRightEdge.to)) {
                     return false;
                 }
 
-                if (v.leftEdge != null && !(v.leftEdge.to.coord.x + 1 == v.coord.x && v.leftEdge.to.coord.y - 1 == v.coord.y)) {
+                if (v.rightEdge != null && !(v.rightEdge.to.coord.x - 1 == v.coord.x)) {
                     return false;
                 }
 
-                if (v.bottomEdge != null && !(((SeamGraphVertex) v).bottom).isSink && !(v.bottomEdge.to.coord.y - 1 == v.coord.y)) {
-                    return false;
-                }
-
-                if (v.rightEdge != null && !(v.rightEdge.to.coord.x -1 == v.coord.x && v.rightEdge.to.coord.y - 1 == v.coord.y)) {
+                if (v.topRightEdge != null && !SeamGraphVertex.checkEquality(topRightVertex, v.topRightEdge.to)) {
                     return false;
                 }
 
@@ -316,11 +314,31 @@ public class OptimizedSeamCarverTest {
     // TODO: implement this method
     public void removingSeamsYieldsIdenticalImages(String filename) {
         Picture picture = PictureUtils.loadPicture(filename);
-        double[][] energies = SeamCarver.computeEnergies(picture, new DualGradientEnergyFunction());
-        DijkstraSeamFinderOptimized sf = new DijkstraSeamFinderOptimized(picture, energies);
+        DualGradientEnergyFunction energyFunc = new DualGradientEnergyFunction();
+        double[][] energies = SeamCarver.computeEnergies(picture, energyFunc);
 
-        DijkstraSeamFinderOptimized.SeamGraphOptimized G = sf.verticalSeamGraph;
-        List<Integer> seam1 = sf.generateRandomVerticalSeam();
+        DijkstraSeamFinderOptimized sfA = new DijkstraSeamFinderOptimized(picture, energies);
+        List<Integer> seamA = sfA.findVerticalSeam();
+
+        DijkstraSeamFinder sfB = new DijkstraSeamFinder();
+        List<Integer> seamB = sfB.findVerticalSeam(energies);
+
+        sfA.verticalSeamGraph.removeSeam(seamA);
+
+        Picture pictureA = sfA.verticalSeamGraph.toPicture();
+
+        SeamCarver scB = new SeamCarver(picture, energyFunc, sfB);
+        scB.removeVerticalSeam(seamB);
+
+        Picture pictureB = scB.picture();
+
+        assertEquals(pictureA.width(), pictureB.width());
+        assertEquals(pictureA.height(), pictureB.height());
+        for (int x=0; x<pictureA.width(); ++x) {
+            for (int y=0; y<pictureA.height(); ++y) {
+                assertEquals(pictureA.getRGB(x,y), pictureB.getRGB(x,y));
+            }
+        }
     }
 
     @Test
