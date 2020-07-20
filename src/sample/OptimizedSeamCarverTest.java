@@ -134,6 +134,55 @@ public class OptimizedSeamCarverTest {
         return true;
     }
 
+    public boolean checkNonNullityOfEdges(DijkstraSeamFinderOptimized.SeamGraphOptimized G) {
+
+        SeamGraphVertex curs = G.start.edgeList.get(0).to;
+
+        for (int y=0; y<G.numVertVertices; ++y) {
+            SeamGraphVertex start = curs;
+
+            for (int x=0; x<G.numHorizVertices; ++x) {
+
+                // check invariants on curs
+                SeamGraphVertex v = curs;
+                SeamGraphVertex topVertex = v.top;
+                SeamGraphVertex topLeftVertex = v.topLeft;
+                SeamGraphVertex topRightVertex = v.topRight;
+                SeamGraphVertex bottomLeftVertex = v.bottomLeft;
+                SeamGraphVertex bottomVertex = v.bottom;
+                SeamGraphVertex bottomRightVertex = v.bottomRight;
+                SeamGraphVertex leftVertex = v.left;
+                SeamGraphVertex rightVertex = v.right;
+
+                if (v.rightEdge == null) {
+                    return false;
+                }
+
+                if (v.bottomEdge == null) {
+                    return false;
+                }
+
+                if (y != 0 && x != G.numHorizVertices - 1 && v.topRightEdge == null) {
+                    return false;
+                }
+
+                if (x != 0 && y != G.numVertVertices - 1 && v.bottomLeftEdge == null) {
+                    return false;
+                }
+
+                if (x != G.numHorizVertices - 1 && y != G.numVertVertices - 1 && v.bottomRightEdge == null) {
+                    return false;
+                }
+
+                curs = ((SeamGraphVertex) curs).right;
+
+            }
+            curs = ((SeamGraphVertex) start).bottom;
+        }
+
+        return true;
+    }
+
     public class InfrastructureTester implements ThrowingSupplier<Object> {
         public InfrastructureTester() {
             Picture picture = PictureUtils.loadPicture("small_image_1.png");
@@ -158,7 +207,13 @@ public class OptimizedSeamCarverTest {
 
     @Test
     public void checkThatInTheVerticalSeamGraphsLowerEdgesAreSetUpCorrectly() {
-        Picture picture = PictureUtils.loadPicture("small_image_1.png");
+        checkThatInTheVerticalSeamGraphsLowerEdgesAreSetUpCorrectly("small_image_1.png");
+        checkThatInTheVerticalSeamGraphsLowerEdgesAreSetUpCorrectly("small_image_2.png");
+        checkThatInTheVerticalSeamGraphsLowerEdgesAreSetUpCorrectly("small_image_3.png");
+    }
+
+    public void checkThatInTheVerticalSeamGraphsLowerEdgesAreSetUpCorrectly(String filename) {
+        Picture picture = PictureUtils.loadPicture(filename);
         double[][] energies = SeamCarver.computeEnergies(picture, new DualGradientEnergyFunction());
         DijkstraSeamFinderOptimized sf = new DijkstraSeamFinderOptimized(picture, energies);
         assertEquals(true,checkThatEdgeEndpointsHaveCorrectCoordinates(sf.verticalSeamGraph));
@@ -170,6 +225,21 @@ public class OptimizedSeamCarverTest {
         double[][] energies = SeamCarver.computeEnergies(picture, new DualGradientEnergyFunction());
         DijkstraSeamFinderOptimized sf = new DijkstraSeamFinderOptimized(picture, energies);
         assertEquals(true,checkThatNeighborsHaveCorrectCoordinates(sf.verticalSeamGraph));
+    }
+
+    @Test
+    public void testThatEdgesSupposedToBeNonNullAreNonNullAfterSetup() {
+        testThatEdgesSupposedToBeNonNullAreNonNullAfterSetup("small_image_1.png");
+        testThatEdgesSupposedToBeNonNullAreNonNullAfterSetup("small_image_2.png");
+        testThatEdgesSupposedToBeNonNullAreNonNullAfterSetup("small_image_3.png");
+    }
+
+    public void testThatEdgesSupposedToBeNonNullAreNonNullAfterSetup(String filename) {
+        Picture picture = PictureUtils.loadPicture(filename);
+        double energies[][] = SeamCarver.computeEnergies(picture,new DualGradientEnergyFunction());
+        DijkstraSeamFinderOptimized sf = new DijkstraSeamFinderOptimized(picture, energies);
+        DijkstraSeamFinderOptimized.SeamGraphOptimized G = sf.verticalSeamGraph;
+        assertTrue(checkNonNullityOfEdges(G));
     }
 
     @Test
@@ -511,7 +581,6 @@ public class OptimizedSeamCarverTest {
         assertEquals(true, checkThatNeighborsHaveCorrectCoordinates(G));
     }
 
-    @Test
     public void printAFewVerticalSeams() {
         Picture picture = PictureUtils.loadPicture("small_image_1.png");
         double[][] energies = SeamCarver.computeEnergies(picture, new DualGradientEnergyFunction());
