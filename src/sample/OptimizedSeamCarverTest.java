@@ -38,8 +38,8 @@ public class OptimizedSeamCarverTest {
                 SeamGraphVertex bottomLeftVertex = v.bottomLeft;
                 SeamGraphVertex bottomVertex = v.bottom;
                 SeamGraphVertex bottomRightVertex = v.bottomRight;
-                SeamGraphVertex rightVertex = v.bottomRight;
-                SeamGraphVertex topRightVertex = v.bottomRight;
+                SeamGraphVertex rightVertex = v.right;
+                SeamGraphVertex topRightVertex = v.topRight;
 
                 if (v.bottomLeftEdge != null && !SeamGraphVertex.checkEquality(bottomLeftVertex, v.bottomLeftEdge.to)) {
                     return false;
@@ -53,7 +53,7 @@ public class OptimizedSeamCarverTest {
                     return false;
                 }
 
-                if (v.rightEdge != null && !(v.rightEdge.to.coord.x - 1 == v.coord.x)) {
+                if (v.rightEdge != null && !SeamGraphVertex.checkEquality(rightVertex, v.rightEdge.to)) {
                     return false;
                 }
 
@@ -203,6 +203,21 @@ public class OptimizedSeamCarverTest {
             e.printStackTrace();
         }
         assertDoesNotThrow(new InfrastructureTester());
+    }
+
+    @Test
+    public void checkThatVerticalSeamGraphIsSetUpCorrectly() {
+        checkThatVerticalSeamGraphIsSetUpCorrectly("small_image_1.png");
+        checkThatVerticalSeamGraphIsSetUpCorrectly("small_image_2.png");
+        checkThatVerticalSeamGraphIsSetUpCorrectly("small_image_3.png");
+    }
+
+    public void checkThatVerticalSeamGraphIsSetUpCorrectly(String filename) {
+        Picture picture = PictureUtils.loadPicture(filename);
+        double[][] energies = SeamCarver.computeEnergies(picture, new DualGradientEnergyFunction());
+        DijkstraSeamFinderOptimized sf = new DijkstraSeamFinderOptimized(picture, energies);
+        assertEquals(true,checkThatEdgeEndpointsHaveCorrectCoordinates(sf.verticalSeamGraph));
+        assertEquals(true, checkThatNeighborsHaveCorrectCoordinates(sf.verticalSeamGraph));
     }
 
     @Test

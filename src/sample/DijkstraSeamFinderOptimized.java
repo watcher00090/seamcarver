@@ -13,7 +13,7 @@ enum DifferenceType {
 }
 
 enum SeamGraphVertexEdgeDescriptor {
-    bottomLeftEdge, bottomEdge, bottomRightEdge, rightEdge, topRightEdge
+    bottomLeftEdge, bottomEdge, bottomRightEdge, rightEdge, topRightEdge;
 }
 
 enum Dir {
@@ -129,6 +129,7 @@ class SeamGraphVertex {
 
         switch (locator) {
             case bottomEdge:
+                //debugCheck(locator,from,newTo,from.bottomEdge);
                 if (newTo == null) {
                     from.bottomEdge = null;
                 } else {
@@ -136,6 +137,7 @@ class SeamGraphVertex {
                 }
                 break;
             case bottomLeftEdge:
+                //debugCheck(locator,from,newTo,from.bottomLeftEdge);
                 if (newTo == null) {
                     from.bottomLeftEdge = null;
                 } else {
@@ -143,6 +145,7 @@ class SeamGraphVertex {
                 }
                 break;
             case bottomRightEdge:
+                //debugCheck(locator,from,newTo,from.bottomRightEdge);
                 if (newTo == null) {
                     from.bottomRightEdge = null;
                 } else {
@@ -150,19 +153,29 @@ class SeamGraphVertex {
                 }
                 break;
             case rightEdge:
+                //debugCheck(locator,from,newTo,from.rightEdge);
                 if (newTo == null) {
                     from.rightEdge = null;
                 } else {
                     from.rightEdge.to = newTo;
                 }
+                break;
             case topRightEdge:
+                //debugCheck(locator,from,newTo,from.topRightEdge);
                 if (newTo == null) {
                     from.topRightEdge = null;
                 } else {
                     from.topRightEdge.to = newTo;
                 }
+                break;
             default:
                 break;
+        }
+    }
+
+    private static void debugCheck(SeamGraphEdgeLocator locator, SeamGraphVertex from, SeamGraphVertex newTo,Edge<SeamGraphVertex> edge) {
+        if (edge == null && newTo != null) {
+            System.out.println("error, edge shouldn't be null!");
         }
     }
 
