@@ -470,23 +470,31 @@ public class DijkstraSeamFinderOptimized {
             return p;
         }
 
-        // update the weights of the edges of v
+        // update the weights of all outgoing edges of v
+        // v.SOMEEDGE == null iff the corresponding vertex that the edge would point to is present in the graph
         public double computeEnergy(SeamGraphVertex v) {
 
-            /*
             double val = energyFunction.apply(v);
-            if (v.leftEdge != null) v.leftEdge.weight = energyFunction.apply(v);
-            if (v.rightEdge != null) v.rightEdge.weight = energyFunction.apply(v);
-            if (v.bottomEdge != null) v.bottomEdge.weight = energyFunction.apply(v);
+
+            if (v.bottomLeftEdge != null) v.bottomLeftEdge.weight = val;
+
+            if (v.bottomEdge != null) v.bottomEdge.weight = val;
+
+            if (v.bottomRightEdge != null) v.bottomRightEdge.weight = val;
+
+            if (v.rightEdge != null) v.rightEdge.weight = val;
+
+            if (v.topRightEdge != null) v.topRightEdge.weight = val;
+
             return val;
-             */
-            return 1.0;
         }
 
         public double energyOfPixel(int x, int y) {
             return energies[x][y];
         }
 
+        // for now, assumes that the SeamGraph is a vertical Seam graph: TODO: make a mode variable which controls
+        // whether the seam graph is operating as a horizontal seam graph or a vertical seam graph
         public Collection<Edge<SeamGraphVertex>> outgoingEdgesFrom(SeamGraphVertex v) {
             if (v.isSource) {
                 return v.edgeList;

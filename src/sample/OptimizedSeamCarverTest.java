@@ -304,22 +304,25 @@ public class OptimizedSeamCarverTest {
 
         DijkstraSeamFinderOptimized.SeamGraphOptimized G = sf.verticalSeamGraph;
 
-        SeamGraphVertex curs = (SeamGraphVertex) (((VerticalSeamGraphVertexSource) G.start).edgeList.get(0).to);
+        SeamGraphVertex curs = G.start.edgeList.get(0).to;
 
         for (int y=0; y<G.numVertVertices; ++y) {
             SeamGraphVertex start = curs;
 
             for (int x=0; x<G.numHorizVertices; ++x) {
 
-                SeamGraphVertex v = (SeamGraphVertex) curs;
+                SeamGraphVertex v = curs;
 
+                if ((G.computeEnergy(v) - G.energyOfPixel(x,y)) >= 1E-6) {
+                    System.out.println("Oops, this shouldn't have happened");
+                }
                 assertTrue((G.computeEnergy(v) - G.energyOfPixel(x,y)) < 1E-6);
 
-                curs = ((SeamGraphVertex) curs).right;
+                curs = curs.right;
 
             }
 
-            curs = ((SeamGraphVertex) start).bottom;
+            curs = start.bottom;
         }
 
     }
@@ -348,7 +351,7 @@ public class OptimizedSeamCarverTest {
             int A = seamA.get(i).intValue();
             int B =  seamB.get(i).intValue();
             System.out.print( (A - B) + ", ");
-            //assertTrue(seamA.get(i).intValue() == seamB.get(i).intValue());
+            assertTrue(seamA.get(i).intValue() == seamB.get(i).intValue());
         }
         System.out.println();
     }
@@ -404,23 +407,22 @@ public class OptimizedSeamCarverTest {
 
         DijkstraSeamFinderOptimized sfA = new DijkstraSeamFinderOptimized(picture, energies);
         List<Integer> seamA = sfA.findVerticalSeam();
+        sfA.verticalSeamGraph.removeSeam(seamA);
+        Picture pictureA = sfA.verticalSeamGraph.toPicture();
 
         DijkstraSeamFinder sfB = new DijkstraSeamFinder();
         List<Integer> seamB = sfB.findVerticalSeam(energies);
-
-        sfA.verticalSeamGraph.removeSeam(seamA);
-
-        Picture pictureA = sfA.verticalSeamGraph.toPicture();
-
         SeamCarver scB = new SeamCarver(picture, energyFunc, sfB);
         scB.removeVerticalSeam(seamB);
-
         Picture pictureB = scB.picture();
 
         assertEquals(pictureA.width(), pictureB.width());
         assertEquals(pictureA.height(), pictureB.height());
         for (int x=0; x<pictureA.width(); ++x) {
             for (int y=0; y<pictureA.height(); ++y) {
+                if (pictureA.getRGB(x,y) != pictureB.getRGB(x,y)) {
+                    System.out.println("Oops, they should have been equal!");
+                }
                 assertEquals(pictureA.getRGB(x,y), pictureB.getRGB(x,y));
             }
         }
