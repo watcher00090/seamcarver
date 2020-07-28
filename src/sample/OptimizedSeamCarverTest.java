@@ -343,7 +343,7 @@ public class OptimizedSeamCarverTest {
         DijkstraSeamFinderOptimized sf = new DijkstraSeamFinderOptimized(picture, energies);
         List<Integer> seamA = sf.findVerticalSeam();
 
-        DijkstraSeamFinder sf2 = new DijkstraSeamFinder();
+        DijkstraSeamFinder sf2 = new DijkstraSeamFinder(true);
         List<Integer> seamB = sf2.findVerticalSeam(energies);
 
         assertTrue(seamA.size() == seamB.size());
@@ -354,6 +354,10 @@ public class OptimizedSeamCarverTest {
             assertTrue(seamA.get(i).intValue() == seamB.get(i).intValue());
         }
         System.out.println();
+    }
+
+    @Test public void testThatSameSeamIsFoundAfterRemovingSeamsRepeatedly() {
+        assertTrue(false);
     }
 
     @Test
