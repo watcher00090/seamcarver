@@ -11,6 +11,8 @@ class Pair<T> {
     public T x;
     public T y;
 
+    public boolean isVisited = false;
+
     public Pair(T x, T y) {
         this.x = x;
         this.y = y;

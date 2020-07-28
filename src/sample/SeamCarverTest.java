@@ -21,6 +21,8 @@ public class SeamCarverTest {
 
     boolean testThatInTheVerticalSeamGraphEdgesAreSetUpCorrectly(String filename) {
 
+        int count = 0;
+
         // Create a queue for BFS
         Queue<Pair<Integer>> queue = new LinkedBlockingQueue<>();
 
@@ -31,13 +33,21 @@ public class SeamCarverTest {
         HashSet<Integer> XCoordRepo = new HashSet<>();
         sf.findVerticalSeam(energies);
 
+        // For keeping track of which vertices have been visited
+        boolean[][] edgeArrayIsVisited = new boolean[picture.width()][picture.height()];
+
         Collection<Edge<Pair<Integer>>> outgoingEdgesFromSource = sf.verticalSeamGraph.outgoingEdgesFrom(sf.verticalSeamGraph.start);
         for (Edge<Pair<Integer>> edge : outgoingEdgesFromSource) {
             if (XCoordRepo.contains(edge.to.x)) {
                 return false;
             }
             XCoordRepo.add(edge.to.x);
+            edgeArrayIsVisited[edge.to.x][edge.to.y] = true;
             queue.add(edge.to);
+        }
+
+        if (outgoingEdgesFromSource.size() != picture.width() || queue.size() != picture.width()) {
+            return false;
         }
 
         for (int k=0; k<outgoingEdgesFromSource.size(); ++k) {
@@ -52,10 +62,18 @@ public class SeamCarverTest {
             // remove a vertex from the front of the queue
             Pair<Integer> v = queue.remove();
 
+            //System.out.println("v.x = " + v.x + ", v.y = " + v.y);
+            count++;
+
             Collection<Edge<Pair<Integer>>> outgoingEdgesFromList =  sf.verticalSeamGraph.outgoingEdgesFrom(v);
+
             boolean foundBottomLeft = false;
             boolean foundBottomRight = false;
             boolean foundBottom = false;
+
+            if (outgoingEdgesFromList.size() > 3) {
+                return false;
+            }
 
             for (Edge<Pair<Integer>> edge : outgoingEdgesFromList) {
                 Pair<Integer> toVertex = edge.to();
@@ -89,12 +107,7 @@ public class SeamCarverTest {
                 }
             }
 
-            if (v.y == picture.height() - 1) {
-                if (foundBottomLeft || !foundBottom || foundBottomRight) {
-                    return false;
-                }
-            } else {
-
+            if (v.y != picture.height()-1) {
                 if (v.x == 0) {
                     if (foundBottomLeft || !foundBottom || !foundBottomRight) {
                         return false;
@@ -108,13 +121,16 @@ public class SeamCarverTest {
                     if (!foundBottomLeft || !foundBottom || !foundBottomRight) {
                         return false;
                     }
-
                 }
+            }
 
-            }
             for (Edge<Pair<Integer>> edge : outgoingEdgesFromList) {
-                queue.add(edge.to);
+                if (v.y != picture.height() - 1 && !edgeArrayIsVisited[edge.to.x][edge.to.y]) {
+                    edgeArrayIsVisited[edge.to.x][edge.to.y] = true;
+                    queue.add(edge.to);
+                }
             }
+
         }
         return true;
     }
