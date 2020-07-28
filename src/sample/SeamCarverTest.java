@@ -109,16 +109,16 @@ public class SeamCarverTest {
 
             if (v.y != picture.height()-1) {
                 if (v.x == 0) {
-                    if (foundBottomLeft || !foundBottom || !foundBottomRight) {
+                    if (foundBottomLeft || !foundBottom || !foundBottomRight || outgoingEdgesFromList.size() != 2) {
                         return false;
                     }
                 } else if (v.x == picture.width() - 1) {
-                    if (!foundBottomLeft || !foundBottom || foundBottomRight) {
+                    if (!foundBottomLeft || !foundBottom || foundBottomRight || outgoingEdgesFromList.size() != 2) {
                         return false;
                     }
                 } else {
 
-                    if (!foundBottomLeft || !foundBottom || !foundBottomRight) {
+                    if (!foundBottomLeft || !foundBottom || !foundBottomRight || outgoingEdgesFromList.size() != 3) {
                         return false;
                     }
                 }

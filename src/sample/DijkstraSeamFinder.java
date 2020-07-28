@@ -243,6 +243,22 @@ public class DijkstraSeamFinder implements SeamFinder {
                 ret.add(vertex.x);
             }
         }
+
+
+        /*
+        List<Pair<Integer>> pathVertices = sp.vertices();
+        Pair<Integer> vertex = pathVertices.get(4);
+        for (Edge<Pair<Integer>> edge : verticalSeamGraph.outgoingEdgesFrom(vertex)) {
+            System.out.println("debugging");
+        }
+        vertex = pathVertices.get(5);
+        for (Edge<Pair<Integer>> edge : verticalSeamGraph.outgoingEdgesFrom(vertex)) {
+            System.out.println("debugging");
+        }
+         */
+
+
+
         return ret;
     }
 

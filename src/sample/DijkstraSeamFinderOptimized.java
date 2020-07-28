@@ -390,7 +390,7 @@ public class DijkstraSeamFinderOptimized {
                     if (y == numVertVertices - 1) {
 
                         currRow[x] = new SeamGraphVertex(new Pair<Integer>(x, y), picture.getRGB(x, y));
-                        currRow[x].bottomEdge = new Edge<SeamGraphVertex>(currRow[x], end, energyOfPixel(x, y));
+                        currRow[x].bottomEdge = new Edge<>(currRow[x], end, energyOfPixel(x, y));
                         currRow[x].bottom = end;
                         //prevRow[x].edgeList.add(prevRow[x].bottomEdge);
 
@@ -399,16 +399,16 @@ public class DijkstraSeamFinderOptimized {
                         currRow[x] = new SeamGraphVertex(new Pair<Integer>(x, y), picture.getRGB(x, y));
 
                         if (x > 0) {
-                            currRow[x].bottomLeftEdge = new Edge<SeamGraphVertex>(currRow[x], prevRow[x - 1], energyOfPixel(x, y));
+                            currRow[x].bottomLeftEdge = new Edge<>(currRow[x], prevRow[x - 1], energyOfPixel(x, y));
                             currRow[x].bottomLeft = prevRow[x - 1];
                             prevRow[x - 1].topRightEdge = new Edge<>(prevRow[x-1], currRow[x], energyOfPixel(x-1,y+1));
                             prevRow[x - 1].topRight = currRow[x];
                         }
 
-                        currRow[x].bottomEdge = new Edge<SeamGraphVertex>(currRow[x], prevRow[x], energyOfPixel(x, y));
+                        currRow[x].bottomEdge = new Edge<>(currRow[x], prevRow[x], energyOfPixel(x, y));
 
                         if (x < numHorizVertices - 1) {
-                            currRow[x].bottomRightEdge = new Edge<SeamGraphVertex>(currRow[x], prevRow[x + 1], energyOfPixel(x, y));
+                            currRow[x].bottomRightEdge = new Edge<>(currRow[x], prevRow[x + 1], energyOfPixel(x, y));
                             currRow[x].bottomRight = prevRow[x + 1];
                             prevRow[x + 1].topLeft = currRow[x];
                         }
@@ -426,11 +426,11 @@ public class DijkstraSeamFinderOptimized {
                         currRow[x].left = currRow[x - 1];
                         currRow[x - 1].right = currRow[x];
 
-                        currRow[x-1].rightEdge = new Edge<SeamGraphVertex>(currRow[x-1], currRow[x], energyOfPixel(x-1, y));
+                        currRow[x-1].rightEdge = new Edge<>(currRow[x-1], currRow[x], energyOfPixel(x-1, y));
                     }
 
                     if (x == numHorizVertices - 1) {
-                        currRow[x].rightEdge = new Edge<SeamGraphVertex>(currRow[x], end_horiz, energyOfPixel(x, y));
+                        currRow[x].rightEdge = new Edge<>(currRow[x], end_horiz, energyOfPixel(x, y));
                     }
 
                 }
@@ -945,9 +945,6 @@ public class DijkstraSeamFinderOptimized {
             }
         }
 
-
-
-
     }
 
 
@@ -958,6 +955,7 @@ public class DijkstraSeamFinderOptimized {
         pf = new DijkstraShortestPathFinder<>();
         ShortestPath<SeamGraphVertex, Edge<SeamGraphVertex>> sp;
         sp = pf.findShortestPath(verticalSeamGraph, verticalSeamGraph.start, verticalSeamGraph.end);
+
         for (SeamGraphVertex vertex : sp.vertices()) {
             if (!vertex.isSource && !vertex.isSink) {
                 ret.add(vertex.coord.x);
@@ -968,6 +966,22 @@ public class DijkstraSeamFinderOptimized {
         }
 
         //verticalSeamGraph.removeSeam(ret);
+
+
+        /*
+        List<SeamGraphVertex> pathVertices = sp.vertices();
+        SeamGraphVertex vertex = pathVertices.get(4);
+        for (Edge<SeamGraphVertex> edge : verticalSeamGraph.outgoingEdgesFrom(vertex)) {
+            System.out.println("debugging");
+        }
+
+        vertex = pathVertices.get(5);
+        for (Edge<SeamGraphVertex> edge : verticalSeamGraph.outgoingEdgesFrom(vertex)) {
+            System.out.println("debugging");
+        }
+        */
+
+
 
         return ret;
     }
