@@ -3,10 +3,8 @@ package sample;
 import edu.princeton.cs.algs4.Picture;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.SynchronousQueue;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -24,20 +22,27 @@ public class SeamCarverTest {
     boolean testThatInTheVerticalSeamGraphEdgesAreSetUpCorrectly(String filename) {
 
         // Create a queue for BFS
-        Queue<Pair<Integer>> queue = new SynchronousQueue<>();
+        Queue<Pair<Integer>> queue = new LinkedBlockingQueue<>();
 
         Picture picture = PictureUtils.loadPicture(filename);
         double[][] energies = SeamCarver.computeEnergies(picture, new DualGradientEnergyFunction());
 
         DijkstraSeamFinder sf= new DijkstraSeamFinder(false);
+        HashSet<Integer> XCoordRepo = new HashSet<>();
         sf.findVerticalSeam(energies);
 
-        ArrayList<Edge<Pair<Integer>>> outgoingEdgesFromSource = (ArrayList) sf.verticalSeamGraph.outgoingEdgesFrom(sf.verticalSeamGraph.start);
-        for (int i=0; i<outgoingEdgesFromSource.size(); ++i) {
-            if (!outgoingEdgesFromSource.get(i).to.equalsPoint(new Pair(i,0))) {
+        Collection<Edge<Pair<Integer>>> outgoingEdgesFromSource = sf.verticalSeamGraph.outgoingEdgesFrom(sf.verticalSeamGraph.start);
+        for (Edge<Pair<Integer>> edge : outgoingEdgesFromSource) {
+            if (XCoordRepo.contains(edge.to.x)) {
                 return false;
-            } else {
-                queue.add(outgoingEdgesFromSource.get(i).to);
+            }
+            XCoordRepo.add(edge.to.x);
+            queue.add(edge.to);
+        }
+
+        for (int k=0; k<outgoingEdgesFromSource.size(); ++k) {
+            if (!XCoordRepo.contains(k)) {
+                return false;
             }
         }
 
@@ -47,13 +52,13 @@ public class SeamCarverTest {
             // remove a vertex from the front of the queue
             Pair<Integer> v = queue.remove();
 
-            ArrayList<Edge<Pair<Integer>>> outgoingEdgesFromList = (ArrayList) sf.verticalSeamGraph.outgoingEdgesFrom(v);
+            Collection<Edge<Pair<Integer>>> outgoingEdgesFromList =  sf.verticalSeamGraph.outgoingEdgesFrom(v);
             boolean foundBottomLeft = false;
             boolean foundBottomRight = false;
             boolean foundBottom = false;
 
-            for (int i = 0; i < outgoingEdgesFromList.size(); ++i) {
-                Pair<Integer> toVertex = outgoingEdgesFromList.get(i).to();
+            for (Edge<Pair<Integer>> edge : outgoingEdgesFromList) {
+                Pair<Integer> toVertex = edge.to();
                 if (v.y == picture.height() - 1) {
                     if (!(toVertex.x < 0 && toVertex.y < 0 && outgoingEdgesFromList.size() == 1)) {
                         return false;
@@ -85,7 +90,7 @@ public class SeamCarverTest {
             }
 
             if (v.y == picture.height() - 1) {
-                if (foundBottomRight || foundBottomLeft || !foundBottom) {
+                if (foundBottomLeft || !foundBottom || foundBottomRight) {
                     return false;
                 }
             } else {
@@ -107,8 +112,8 @@ public class SeamCarverTest {
                 }
 
             }
-            for (int i = 0; i < outgoingEdgesFromList.size(); ++i) {
-                queue.add(outgoingEdgesFromList.get(i).to);
+            for (Edge<Pair<Integer>> edge : outgoingEdgesFromList) {
+                queue.add(edge.to);
             }
         }
         return true;
