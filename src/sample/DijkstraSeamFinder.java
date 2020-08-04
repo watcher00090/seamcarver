@@ -258,7 +258,6 @@ public class DijkstraSeamFinder implements SeamFinder {
          */
 
 
-
         return ret;
     }
 

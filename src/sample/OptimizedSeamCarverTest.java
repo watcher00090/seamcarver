@@ -331,21 +331,18 @@ public class OptimizedSeamCarverTest {
     // TODO: implement this method
     public void bothSeamFindersFindSameSeam() {
         //bothSeamFindersFindSameSeam("small_image_1.png");
-        bothSeamFindersFindSameSeam("small_image_2.png");
-        bothSeamFindersFindSameSeam("small_image_3.png");
+        for (int i=0; i<20; ++i) {
+            bothSeamFindersFindSameSeam("small_image_1.png");
+            bothSeamFindersFindSameSeam("small_image_2.png");
+            bothSeamFindersFindSameSeam("small_image_3.png");
+        }
     }
 
     // TODO: implement this method
     public void bothSeamFindersFindSameSeam(String filename) {
         Picture picture = PictureUtils.loadPicture(filename);
         double[][] energies = SeamCarver.computeEnergies(picture, new DualGradientEnergyFunction());
-
-        // preturb so to prevent multiple shortest paths
-        for (int i=0;i<energies.length; ++i) {
-            for (int j=0;j<energies[i].length; ++j) {
-                energies[i][j] += (Math.random() / 1.0E12);
-            }
-        }
+        perturb(energies);
 
         DijkstraSeamFinderOptimized sf = new DijkstraSeamFinderOptimized(picture, energies);
         List<Integer> seamA = sf.findVerticalSeam();
@@ -361,6 +358,15 @@ public class OptimizedSeamCarverTest {
             assertTrue(seamA.get(i).intValue() == seamB.get(i).intValue());
         }
         System.out.println();
+    }
+
+    // perturb so to prevent multiple shortest paths
+    private void perturb(double[][] energies) {
+        for (int i=0;i<energies.length; ++i) {
+            for (int j=0;j<energies[i].length; ++j) {
+                energies[i][j] += (Math.random() / 1.0E5);
+            }
+        }
     }
 
     @Test public void testThatSameSeamIsFoundAfterRemovingSeamsRepeatedly() {
@@ -415,6 +421,7 @@ public class OptimizedSeamCarverTest {
         Picture picture = PictureUtils.loadPicture(filename);
         DualGradientEnergyFunction energyFunc = new DualGradientEnergyFunction();
         double[][] energies = SeamCarver.computeEnergies(picture, energyFunc);
+        perturb(energies);
 
         DijkstraSeamFinderOptimized sfA = new DijkstraSeamFinderOptimized(picture, energies);
         List<Integer> seamA = sfA.findVerticalSeam();
