@@ -1,11 +1,18 @@
+/**
+ * Sample Skeleton for 'sample.fxml' Controller Class
+ */
+
 package sample;
 
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 
 public class LayoutController {
@@ -27,6 +34,9 @@ public class LayoutController {
 
     @FXML // fx:id="uploadButton"
     private Button uploadButton; // Value injected by FXMLLoader
+
+    @FXML // fx:id="scene"
+    private AnchorPane scene; // Value injected by FXMLLoader
 
     @FXML
     void handleImageDrag(ActionEvent event) {
@@ -59,6 +69,6 @@ public class LayoutController {
         assert undoLastChangeButton != null : "fx:id=\"undoLastChangeButton\" was not injected: check your FXML file 'sample.fxml'.";
         assert saveButton != null : "fx:id=\"saveButton\" was not injected: check your FXML file 'sample.fxml'.";
         assert uploadButton != null : "fx:id=\"uploadButton\" was not injected: check your FXML file 'sample.fxml'.";
+        assert scene != null : "fx:id=\"scene\" was not injected: check your FXML file 'sample.fxml'.";
     }
 }
-
