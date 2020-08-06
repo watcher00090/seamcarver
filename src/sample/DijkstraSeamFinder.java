@@ -11,6 +11,8 @@ class Pair<T> {
     public T x;
     public T y;
 
+    public boolean isVisited = false;
+
     public Pair(T x, T y) {
         this.x = x;
         this.y = y;
@@ -26,10 +28,17 @@ public class DijkstraSeamFinder implements SeamFinder {
     //  you choose for your graph
     private final ShortestPathFinder<Graph<Object, Edge<Object>>, Object, Edge<Object>> pathFinder;
     public List<Integer> lastSeam = null;
+    boolean weightBasedOnFromVertex = false;
+    public VerticalSeamGraph verticalSeamGraph = null;
     //VerticalSeamGraphVertex topRowVertex = null;
 
     public DijkstraSeamFinder() {
         this.pathFinder = createPathFinder();
+    }
+
+    public DijkstraSeamFinder(boolean weightBasedOnFromVertex) {
+        this.pathFinder = createPathFinder();
+        this.weightBasedOnFromVertex = weightBasedOnFromVertex;
     }
 
     protected <G extends Graph<V, Edge<V>>, V> ShortestPathFinder<G, V, Edge<V>> createPathFinder() {
@@ -56,9 +65,28 @@ public class DijkstraSeamFinder implements SeamFinder {
         Pair<Integer> end;
         int numHorizVertices;
         int numVertVertices;
+        boolean weightBasedOnFromVertex;
 
         public double energyOfPixel(int x, int y) {
             return energies[x][y];
+        }
+
+        public Edge<Pair<Integer>> createEdge(Pair<Integer> from, Pair<Integer> to) {
+            int x;
+            int y;
+            if (weightBasedOnFromVertex) {
+                x = from.x;
+                y = from.y;
+            } else {
+                x = to.x;
+                y = to.y;
+            }
+            if (x < 0 || y < 0) {
+                return new Edge<>(from,to,0);
+            } else {
+                return new Edge<>(from,to,energyOfPixel(x,y));
+            }
+
         }
 
         // weight of edge = energy of 'to' vertex
@@ -69,6 +97,18 @@ public class DijkstraSeamFinder implements SeamFinder {
             assert (energies.length > 0 && energies[0].length > 0);
             numHorizVertices = energies.length;
             numVertVertices = energies[0].length;
+            weightBasedOnFromVertex = false;
+        }
+
+        // weight of edge = energy of 'to' vertex
+        public VerticalSeamGraph(double[][] energies, boolean weightBasedOnFromVertex) {
+            this.energies = energies;
+            start = new Pair<>(-1, -1);
+            end = new Pair<>(-2, -2);
+            assert (energies.length > 0 && energies[0].length > 0);
+            numHorizVertices = energies.length;
+            numVertVertices = energies[0].length;
+            this.weightBasedOnFromVertex = weightBasedOnFromVertex;
         }
 
         public Collection<Edge<Pair<Integer>>> outgoingEdgesFrom(Pair<Integer> vertex) {
@@ -76,7 +116,7 @@ public class DijkstraSeamFinder implements SeamFinder {
 
             if (vertex.equalsPoint(start)) {
                 for (int x = 0; x < numHorizVertices; ++x) {
-                    neighbors.add(new Edge<>(start, new Pair<>(x, 0), energyOfPixel(x, 0)));
+                    neighbors.add(createEdge(start, new Pair<>(x, 0)));
                 }
                 return neighbors;
             }
@@ -86,7 +126,7 @@ public class DijkstraSeamFinder implements SeamFinder {
             }
 
             if (vertex.y == numVertVertices - 1) {
-                neighbors.add(new Edge<>(vertex, end, 0));
+                neighbors.add(createEdge(vertex, end));
                 return neighbors; // only an edge to end
             }
 
@@ -100,7 +140,7 @@ public class DijkstraSeamFinder implements SeamFinder {
                 toVerticesOfOutgoingEdges.add(new Pair<>(vertex.x + 1, vertex.y + 1));
             }
             for (Pair<Integer> toVertex : toVerticesOfOutgoingEdges) {
-                neighbors.add(new Edge<>(vertex, toVertex, energyOfPixel(toVertex.x, toVertex.y)));
+                neighbors.add(createEdge(vertex, toVertex));
             }
             return neighbors;
         }
@@ -192,7 +232,8 @@ public class DijkstraSeamFinder implements SeamFinder {
         }
 
         List<Integer> ret = new ArrayList<>();
-        VerticalSeamGraph verticalSeamGraph = new VerticalSeamGraph(energies);
+        VerticalSeamGraph verticalSeamGraph = new VerticalSeamGraph(energies,this.weightBasedOnFromVertex);
+        this.verticalSeamGraph = verticalSeamGraph;
         DijkstraShortestPathFinder<Graph<Pair<Integer>, Edge<Pair<Integer>>>, Pair<Integer>, Edge<Pair<Integer>>> pf;
         pf = new DijkstraShortestPathFinder<>();
         ShortestPath<Pair<Integer>, Edge<Pair<Integer>>> sp;
@@ -202,6 +243,21 @@ public class DijkstraSeamFinder implements SeamFinder {
                 ret.add(vertex.x);
             }
         }
+
+
+        /*
+        List<Pair<Integer>> pathVertices = sp.vertices();
+        Pair<Integer> vertex = pathVertices.get(4);
+        for (Edge<Pair<Integer>> edge : verticalSeamGraph.outgoingEdgesFrom(vertex)) {
+            System.out.println("debugging");
+        }
+        vertex = pathVertices.get(5);
+        for (Edge<Pair<Integer>> edge : verticalSeamGraph.outgoingEdgesFrom(vertex)) {
+            System.out.println("debugging");
+        }
+         */
+
+
         return ret;
     }
 

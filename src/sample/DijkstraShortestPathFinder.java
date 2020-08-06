@@ -38,6 +38,7 @@ public class DijkstraShortestPathFinder<G extends Graph<V, E>, V, E extends Base
             edges.add(0, edge);
             curr = edge.from();
         }
+
         return new ShortestPath.Success<>(edges);
     }
 

@@ -38,8 +38,8 @@ public class OptimizedSeamCarverTest {
                 SeamGraphVertex bottomLeftVertex = v.bottomLeft;
                 SeamGraphVertex bottomVertex = v.bottom;
                 SeamGraphVertex bottomRightVertex = v.bottomRight;
-                SeamGraphVertex rightVertex = v.bottomRight;
-                SeamGraphVertex topRightVertex = v.bottomRight;
+                SeamGraphVertex rightVertex = v.right;
+                SeamGraphVertex topRightVertex = v.topRight;
 
                 if (v.bottomLeftEdge != null && !SeamGraphVertex.checkEquality(bottomLeftVertex, v.bottomLeftEdge.to)) {
                     return false;
@@ -53,7 +53,7 @@ public class OptimizedSeamCarverTest {
                     return false;
                 }
 
-                if (v.rightEdge != null && !(v.rightEdge.to.coord.x - 1 == v.coord.x)) {
+                if (v.rightEdge != null && !SeamGraphVertex.checkEquality(rightVertex, v.rightEdge.to)) {
                     return false;
                 }
 
@@ -206,6 +206,21 @@ public class OptimizedSeamCarverTest {
     }
 
     @Test
+    public void checkThatVerticalSeamGraphIsSetUpCorrectly() {
+        checkThatVerticalSeamGraphIsSetUpCorrectly("small_image_1.png");
+        checkThatVerticalSeamGraphIsSetUpCorrectly("small_image_2.png");
+        checkThatVerticalSeamGraphIsSetUpCorrectly("small_image_3.png");
+    }
+
+    public void checkThatVerticalSeamGraphIsSetUpCorrectly(String filename) {
+        Picture picture = PictureUtils.loadPicture(filename);
+        double[][] energies = SeamCarver.computeEnergies(picture, new DualGradientEnergyFunction());
+        DijkstraSeamFinderOptimized sf = new DijkstraSeamFinderOptimized(picture, energies);
+        assertEquals(true,checkThatEdgeEndpointsHaveCorrectCoordinates(sf.verticalSeamGraph));
+        assertEquals(true, checkThatNeighborsHaveCorrectCoordinates(sf.verticalSeamGraph));
+    }
+
+    @Test
     public void checkThatInTheVerticalSeamGraphsLowerEdgesAreSetUpCorrectly() {
         checkThatInTheVerticalSeamGraphsLowerEdgesAreSetUpCorrectly("small_image_1.png");
         checkThatInTheVerticalSeamGraphsLowerEdgesAreSetUpCorrectly("small_image_2.png");
@@ -289,22 +304,25 @@ public class OptimizedSeamCarverTest {
 
         DijkstraSeamFinderOptimized.SeamGraphOptimized G = sf.verticalSeamGraph;
 
-        SeamGraphVertex curs = (SeamGraphVertex) (((VerticalSeamGraphVertexSource) G.start).edgeList.get(0).to);
+        SeamGraphVertex curs = G.start.edgeList.get(0).to;
 
         for (int y=0; y<G.numVertVertices; ++y) {
             SeamGraphVertex start = curs;
 
             for (int x=0; x<G.numHorizVertices; ++x) {
 
-                SeamGraphVertex v = (SeamGraphVertex) curs;
+                SeamGraphVertex v = curs;
 
-                assertTrue((G.computeEnergy(v) - G.energyOfPixel(x,y)) < 1E-6);
+                if ((G.computeEnergy(v) - G.energyOfPixel(x,y)) >= 1E-20) {
+                    System.out.println("Oops, this shouldn't have happened");
+                }
+                assertTrue((G.computeEnergy(v) - G.energyOfPixel(x,y)) < 1E-20);
 
-                curs = ((SeamGraphVertex) curs).right;
+                curs = curs.right;
 
             }
 
-            curs = ((SeamGraphVertex) start).bottom;
+            curs = start.bottom;
         }
 
     }
@@ -312,20 +330,24 @@ public class OptimizedSeamCarverTest {
     @Test
     // TODO: implement this method
     public void bothSeamFindersFindSameSeam() {
-        bothSeamFindersFindSameSeam("small_image_1.png");
-        bothSeamFindersFindSameSeam("small_image_2.png");
-        bothSeamFindersFindSameSeam("small_image_3.png");
+        //bothSeamFindersFindSameSeam("small_image_1.png");
+        for (int i=0; i<20; ++i) {
+            bothSeamFindersFindSameSeam("small_image_1.png");
+            bothSeamFindersFindSameSeam("small_image_2.png");
+            bothSeamFindersFindSameSeam("small_image_3.png");
+        }
     }
 
     // TODO: implement this method
     public void bothSeamFindersFindSameSeam(String filename) {
         Picture picture = PictureUtils.loadPicture(filename);
         double[][] energies = SeamCarver.computeEnergies(picture, new DualGradientEnergyFunction());
+        perturb(energies);
 
         DijkstraSeamFinderOptimized sf = new DijkstraSeamFinderOptimized(picture, energies);
         List<Integer> seamA = sf.findVerticalSeam();
 
-        DijkstraSeamFinder sf2 = new DijkstraSeamFinder();
+        DijkstraSeamFinder sf2 = new DijkstraSeamFinder(true);
         List<Integer> seamB = sf2.findVerticalSeam(energies);
 
         assertTrue(seamA.size() == seamB.size());
@@ -333,9 +355,22 @@ public class OptimizedSeamCarverTest {
             int A = seamA.get(i).intValue();
             int B =  seamB.get(i).intValue();
             System.out.print( (A - B) + ", ");
-            //assertTrue(seamA.get(i).intValue() == seamB.get(i).intValue());
+            assertTrue(seamA.get(i).intValue() == seamB.get(i).intValue());
         }
         System.out.println();
+    }
+
+    // perturb so to prevent multiple shortest paths
+    private void perturb(double[][] energies) {
+        for (int i=0;i<energies.length; ++i) {
+            for (int j=0;j<energies[i].length; ++j) {
+                energies[i][j] += (Math.random() / 1.0E5);
+            }
+        }
+    }
+
+    @Test public void testThatSameSeamIsFoundAfterRemovingSeamsRepeatedly() {
+        assertTrue(false);
     }
 
     @Test
@@ -386,26 +421,26 @@ public class OptimizedSeamCarverTest {
         Picture picture = PictureUtils.loadPicture(filename);
         DualGradientEnergyFunction energyFunc = new DualGradientEnergyFunction();
         double[][] energies = SeamCarver.computeEnergies(picture, energyFunc);
+        perturb(energies);
 
         DijkstraSeamFinderOptimized sfA = new DijkstraSeamFinderOptimized(picture, energies);
         List<Integer> seamA = sfA.findVerticalSeam();
+        sfA.verticalSeamGraph.removeSeam(seamA);
+        Picture pictureA = sfA.verticalSeamGraph.toPicture();
 
         DijkstraSeamFinder sfB = new DijkstraSeamFinder();
         List<Integer> seamB = sfB.findVerticalSeam(energies);
-
-        sfA.verticalSeamGraph.removeSeam(seamA);
-
-        Picture pictureA = sfA.verticalSeamGraph.toPicture();
-
         SeamCarver scB = new SeamCarver(picture, energyFunc, sfB);
         scB.removeVerticalSeam(seamB);
-
         Picture pictureB = scB.picture();
 
         assertEquals(pictureA.width(), pictureB.width());
         assertEquals(pictureA.height(), pictureB.height());
         for (int x=0; x<pictureA.width(); ++x) {
             for (int y=0; y<pictureA.height(); ++y) {
+                if (pictureA.getRGB(x,y) != pictureB.getRGB(x,y)) {
+                    System.out.println("Oops, they should have been equal!");
+                }
                 assertEquals(pictureA.getRGB(x,y), pictureB.getRGB(x,y));
             }
         }
