@@ -14,10 +14,11 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception{
-        Parent root = FXMLLoader.load(getClass().getResource("sample.fxml"));
+        Parent root = FXMLLoader.load(getClass().getResource("newlayout.fxml"));
         primaryStage.setTitle("Hello World");
-        Scene scene = new Scene(root, 300, 275);
+        Scene scene = new Scene(root, 495, 31);
         primaryStage.setScene(scene);
+        primaryStage.setResizable(false);
 
         scene.widthProperty().addListener(new ChangeListener<Number>() {
             @Override public void changed(ObservableValue<? extends Number> observableValue, Number oldSceneWidth, Number newSceneWidth) {

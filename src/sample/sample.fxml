@@ -22,7 +22,7 @@
                               <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
                            </padding>
                         </AnchorPane>
-                      <AnchorPane minHeight="0.0" minWidth="0.0">
+                      <AnchorPane maxHeight="40.0" minHeight="40.0" minWidth="0.0" prefHeight="40.0" SplitPane.resizableWithParent="false">
                            <children>
                               <VBox alignment="CENTER" layoutX="10.0" layoutY="14.0" prefHeight="42.0" prefWidth="465.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                  <children>
