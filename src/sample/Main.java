@@ -37,7 +37,7 @@ public class Main extends Application {
         Scene scene = new Scene(root, 495, 31);
         primaryStage.setScene(scene);
         primaryStage.setResizable(false);
-        primaryStage.setTitle("Content-aware Image Resizer");
+        primaryStage.setTitle("Content-Aware Image Resizer");
 
         LayoutController controller = (LayoutController)loader.getController();
         controller.setStageAndSetupListeners(primaryStage, fileChooser); // or what you want to do

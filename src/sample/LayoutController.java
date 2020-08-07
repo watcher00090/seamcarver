@@ -2,7 +2,11 @@ package sample;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.Group;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
@@ -10,6 +14,8 @@ import javafx.stage.Stage;
 import org.assertj.core.internal.bytebuddy.implementation.bind.annotation.IgnoreForBinding;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -55,12 +61,29 @@ public class LayoutController {
     void uploadImage(ActionEvent event) {
         File file = fileChooser.showOpenDialog(stage);
         if (file != null) {
-            openFile(file);
+            try {
+                openFile(file);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
-    private void openFile(File file) {
-        System.out.println("Do something with the file being opened...");
+    private void openFile(File file) throws FileNotFoundException {
+        System.out.println("Uploading a new image...");
+        FileInputStream stream = new FileInputStream(file);
+        Image image = new Image(stream);
+        ImageView imageView = new ImageView();
+        imageView.setImage(image);
+
+        //open a scene in a new window and display the image
+        Group root = new Group(imageView);
+        Scene popupScene = new Scene(root);
+        Stage popupStage = new Stage();
+        popupStage.setTitle("Displaying Image");
+        popupStage.setScene(popupScene);
+        popupStage.setResizable(true);
+        popupStage.show();
     }
 
     @FXML
