@@ -116,18 +116,17 @@ public class LayoutController {
 
         imageView.setOnMouseMoved(new EventHandler<MouseEvent>() {
             @Override public void handle(MouseEvent e) {
-                if ((e.getX() - image.getWidth()) < 10 && (e.getY() - image.getHeight()) < 10) {
+                if (Math.abs(e.getX() - image.getWidth()) < 10 && Math.abs(e.getY() - image.getHeight()) < 10) {
                     imageView.setCursor(Cursor.NW_RESIZE);
-                } else if (e.getX() - image.getWidth() < 10 ) {
+                } else if (Math.abs(e.getX() - image.getWidth()) < 10 ) {
                     imageView.setCursor(Cursor.W_RESIZE);
-                } else if (e.getY() - image.getHeight() < 10) {
+                } else if (Math.abs(e.getY() - image.getHeight()) < 10) {
                     imageView.setCursor(Cursor.N_RESIZE);
                 } else {
                     imageView.setCursor(Cursor.DEFAULT);
                 }
             }
         });
-
 
         imageView.setOnMouseDragged(new EventHandler<MouseEvent>() {
             @Override public void handle(MouseEvent e) {
