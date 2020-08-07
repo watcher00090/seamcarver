@@ -5,6 +5,7 @@ import java.util.Objects;
 /**
  * A wrapper for integers; meant for testing custom objects in generic type parameters.
  */
+
 public class IntWrapper {
     public final int val;
 

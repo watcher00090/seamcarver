@@ -1,19 +1,23 @@
+/**
+ * Sample Skeleton for 'sample.fxml' Controller Class
+ */
+
 package sample;
 
+import java.io.File;
+import java.net.URL;
+import java.util.ResourceBundle;
+
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
-import javafx.stage.Stage;
-import org.assertj.core.internal.bytebuddy.implementation.bind.annotation.IgnoreForBinding;
 
-import java.io.File;
-import java.net.URL;
-import java.util.ResourceBundle;
-
-public class LayoutController {
+public class LayoutControllerOld {
 
     @FXML // ResourceBundle that was given to the FXMLLoader
     private ResourceBundle resources;
@@ -36,9 +40,6 @@ public class LayoutController {
     @FXML // fx:id="scene"
     private AnchorPane scene; // Value injected by FXMLLoader
 
-    private FileChooser fileChooser;
-
-    private Stage stage;
 
     @FXML
     void handleImageDrag(ActionEvent event) {
@@ -50,17 +51,8 @@ public class LayoutController {
 
     }
 
-
     @FXML
     void uploadImage(ActionEvent event) {
-        File file = fileChooser.showOpenDialog(stage);
-        if (file != null) {
-            openFile(file);
-        }
-    }
-
-    private void openFile(File file) {
-        System.out.println("Do something with the file being opened...");
     }
 
     @FXML
@@ -73,11 +65,6 @@ public class LayoutController {
 
     }
 
-    void setStageAndSetupListeners(Stage stage, FileChooser fileChooser) {
-        this.fileChooser = fileChooser;
-        this.stage = stage;
-    }
-
     @FXML // This method is called by the FXMLLoader when initialization is complete
     void initialize() {
         assert imagePane != null : "fx:id=\"imagePane\" was not injected: check your FXML file 'sample.fxml'.";
@@ -86,5 +73,4 @@ public class LayoutController {
         assert uploadButton != null : "fx:id=\"uploadButton\" was not injected: check your FXML file 'sample.fxml'.";
         assert scene != null : "fx:id=\"scene\" was not injected: check your FXML file 'sample.fxml'.";
     }
-
 }
