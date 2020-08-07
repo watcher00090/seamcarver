@@ -1,12 +1,17 @@
 package sample;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.scene.Cursor;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
@@ -18,6 +23,10 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.net.URL;
 import java.util.ResourceBundle;
+
+enum CursorMode {
+    NW_RESIZE, N_RESIZE, W_RESIZE, NORMAL;
+}
 
 public class LayoutController {
 
@@ -79,11 +88,55 @@ public class LayoutController {
         //open a scene in a new window and display the image
         Group root = new Group(imageView);
         Scene popupScene = new Scene(root);
+
         Stage popupStage = new Stage();
+
+        /*
+        popupStage.widthProperty().addListener(new ChangeListener<Number>() {
+            @Override public void changed(ObservableValue<? extends Number> observableValue, Number oldSceneWidth, Number newSceneWidth) {
+                System.out.println("Width: " + newSceneWidth);
+                //  ((AnchorPane) root).setPrefWidth(newSceneWidth.doubleValue());
+                System.out.println("Image Width: " + image.getWidth());
+            }
+        });
+        popupStage.heightProperty().addListener(new ChangeListener<Number>() {
+            @Override public void changed(ObservableValue<? extends Number> observableValue, Number oldSceneHeight, Number newSceneHeight) {
+                System.out.println("Height: " + newSceneHeight);
+                // ((AnchorPane) root).setPrefHeight(newSceneHeight.doubleValue());
+                System.out.println("Image Height: " + image.getHeight());
+
+            }
+        });
+        */
+
         popupStage.setTitle("Displaying Image");
         popupStage.setScene(popupScene);
         popupStage.setResizable(true);
         popupStage.show();
+
+        imageView.setOnMouseMoved(new EventHandler<MouseEvent>() {
+            @Override public void handle(MouseEvent e) {
+                if ((e.getX() - image.getWidth()) < 10 && (e.getY() - image.getHeight()) < 10) {
+                    imageView.setCursor(Cursor.NW_RESIZE);
+                } else if (e.getX() - image.getWidth() < 10 ) {
+                    imageView.setCursor(Cursor.W_RESIZE);
+                } else if (e.getY() - image.getHeight() < 10) {
+                    imageView.setCursor(Cursor.N_RESIZE);
+                } else {
+                    imageView.setCursor(Cursor.DEFAULT);
+                }
+            }
+        });
+
+
+        imageView.setOnMouseDragged(new EventHandler<MouseEvent>() {
+            @Override public void handle(MouseEvent e) {
+                System.out.println("X coord of mouse event: " + e.getX());
+                System.out.println("Y coord of mouse event: " + e.getY());
+            }
+        });
+
+
     }
 
     @FXML
