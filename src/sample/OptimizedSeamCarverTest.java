@@ -1,6 +1,7 @@
 package sample;
 
 import edu.princeton.cs.algs4.Picture;
+import javafx.scene.image.Image;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.ThrowingSupplier;
 
@@ -212,6 +213,17 @@ public class OptimizedSeamCarverTest {
         checkThatVerticalSeamGraphIsSetUpCorrectly("small_image_3.png");
     }
 
+    @Test
+    public void checkThatPictureWrapperIsWorkingCorrectly() {
+        checkThatPictureWrapperIsWorkingCorrectly("small_image_1.png");
+        checkThatPictureWrapperIsWorkingCorrectly("small_image_2.png");
+        checkThatPictureWrapperIsWorkingCorrectly("small_image_3.png");
+    }
+
+    public void checkThatPictureWrapperIsWorkingCorrectly(String filename) {
+        assertTrue(false);
+    }
+
     public void checkThatVerticalSeamGraphIsSetUpCorrectly(String filename) {
         Picture picture = PictureUtils.loadPicture(filename);
         double[][] energies = SeamCarver.computeEnergies(picture, new DualGradientEnergyFunction());
@@ -331,7 +343,7 @@ public class OptimizedSeamCarverTest {
     // TODO: implement this method
     public void bothSeamFindersFindSameSeam() {
         //bothSeamFindersFindSameSeam("small_image_1.png");
-        for (int i=0; i<20; ++i) {
+        for (int i=0; i<6; ++i) {
             bothSeamFindersFindSameSeam("small_image_1.png");
             bothSeamFindersFindSameSeam("small_image_2.png");
             bothSeamFindersFindSameSeam("small_image_3.png");

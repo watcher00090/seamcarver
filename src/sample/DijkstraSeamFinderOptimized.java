@@ -1,6 +1,9 @@
 package sample;
 
 import edu.princeton.cs.algs4.Picture;
+import javafx.scene.image.Image;
+import javafx.scene.image.PixelReader;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -52,7 +55,32 @@ class BlueColorFunction implements Function<SeamGraphVertex, Integer> {
 enum DeletionCase {case1, case2, case3};
 
 
+interface RGBFetcher {
+    // get the color of the pixel at coordinate (x,y)
+    public int getRGB(int x, int y);
+}
 
+class PictureWrapper implements RGBFetcher {
+    Picture picture;
+    public PictureWrapper(Picture picture) {
+        this.picture = picture;
+    }
+    public int getRGB(int x, int y) {
+        return picture.getRGB(x,y);
+    }
+}
+
+class ImageWrapper implements RGBFetcher {
+    Image image;
+    PixelReader reader;
+    public ImageWrapper(Image image) {
+        this.image = image;
+        this.reader = image.getPixelReader();
+    }
+    public int getRGB(int x, int y) {
+        return reader.getArgb(x,y);
+    }
+}
 
 class SeamGraphVertex {
 
@@ -330,7 +358,13 @@ public class DijkstraSeamFinderOptimized {
 
     public DijkstraSeamFinderOptimized(Picture picture, double[][] energies) {
         this.pathFinder = createPathFinder();
-        this.verticalSeamGraph = new SeamGraphOptimized(picture, energies);
+        this.verticalSeamGraph = new SeamGraphOptimized(new PictureWrapper(picture), energies);
+    }
+
+
+    public DijkstraSeamFinderOptimized(Image image, double[][] energies) {
+        this.pathFinder = createPathFinder();
+        this.verticalSeamGraph = new SeamGraphOptimized(new ImageWrapper(image), energies);
     }
 
     protected <G extends Graph<V, Edge<V>>, V> ShortestPathFinder<G, V, Edge<V>> createPathFinder() {
@@ -362,7 +396,7 @@ public class DijkstraSeamFinderOptimized {
         public List<Integer> debugSeam;
 
         // weight of edge = energy of 'from' vertex
-        public SeamGraphOptimized(Picture picture, double[][] energies) {
+        public SeamGraphOptimized(RGBFetcher picture, double[][] energies) {
             this.energyFunction = new DualGradientEnergyFunctionNodal();
             this.energies = energies;
 
