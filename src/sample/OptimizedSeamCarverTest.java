@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.ThrowingSupplier;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -218,10 +219,30 @@ public class OptimizedSeamCarverTest {
         checkThatPictureWrapperIsWorkingCorrectly("small_image_1.png");
         checkThatPictureWrapperIsWorkingCorrectly("small_image_2.png");
         checkThatPictureWrapperIsWorkingCorrectly("small_image_3.png");
+        checkThatPictureWrapperIsWorkingCorrectly("small_image_4.png");
+        checkThatPictureWrapperIsWorkingCorrectly("small_image_5.png");
     }
 
     public void checkThatPictureWrapperIsWorkingCorrectly(String filename) {
-        assertTrue(false);
+        try {
+            Picture picture = PictureUtils.loadPicture(filename);
+            Image image = new Image(new FileInputStream(filename));
+
+            RGBFetcher pictureWrapper = new PictureWrapper(picture);
+            RGBFetcher imageWrapper = new ImageWrapper(image);
+
+            assertEquals(picture.width(), image.getWidth());
+            assertEquals(picture.height(), image.getHeight());
+
+            for (int x=0; x<picture.width(); ++x) {
+                for (int y=0; y<picture.height(); ++y) {
+                    assertEquals(pictureWrapper.getRGB(x,y), imageWrapper.getRGB(x,y));
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void checkThatVerticalSeamGraphIsSetUpCorrectly(String filename) {
