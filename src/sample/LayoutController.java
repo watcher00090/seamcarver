@@ -97,20 +97,22 @@ public class LayoutController {
         System.out.println("Uploading a new image...");
         FileInputStream stream = new FileInputStream(file);
         Image image = new Image(stream);
-        ImageView imageView = new ImageView(image);
+        //ImageView imageView = new ImageView(image);
         Dimension screenSize = Toolkit.getDefaultToolkit ().getScreenSize ();
         double windowWidth = screenSize.getWidth();
         double windowHeight = screenSize.getHeight();
 
-        //WritableImage writableImage = new WritableImage(image.widthProperty().intValue(), image.heightProperty().intValue());
-
-        //canvas = new Canvas(canvasWidth,canvasHeight);
+        WritableImage writableImage = new WritableImage(image.widthProperty().intValue(), image.heightProperty().intValue());
+        canvas = new Canvas(windowWidth,windowHeight);
+        ImageView imageView = new ImageView();
 
         this.setSeamFinder(new DijkstraSeamFinderOptimized(image));
         //drawImage(image);
 
         //WritableImage writableImage = new WritableImage(new SeamGraphPixelReader(sf), image.widthProperty().intValue(), image.heightProperty().intValue());
 
+        loadDataIntoWritableImage(writableImage, image, sf);
+        imageView.setImage(writableImage);
         //imageView.setImage(image);
 
         // changed from
@@ -202,6 +204,15 @@ public class LayoutController {
             }
         });
 
+    }
+
+    private void loadDataIntoWritableImage(WritableImage writableImage, Image image, DijkstraSeamFinderOptimized sf) {
+        for (int x=0; x<image.widthProperty().intValue(); ++x) {
+            for (int y=0; y<image.heightProperty().intValue(); ++y) {
+                //writableImage.getPixelWriter().setArgb(x,y,image.getPixelReader().getArgb(x,y));
+                writableImage.getPixelWriter().setArgb(x,y,sf.verticalSeamGraph.rgbfetcher.getRGB(x,y));
+            }
+        }
     }
 
     private void drawImage(Image image) {
