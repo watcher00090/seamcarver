@@ -2,12 +2,16 @@ package sample;
 
 import edu.princeton.cs.algs4.Picture;
 import javafx.scene.image.Image;
+
+
+import javafx.scene.image.PixelFormat;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.ThrowingSupplier;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -212,6 +216,29 @@ public class OptimizedSeamCarverTest {
         checkThatVerticalSeamGraphIsSetUpCorrectly("small_image_1.png");
         checkThatVerticalSeamGraphIsSetUpCorrectly("small_image_2.png");
         checkThatVerticalSeamGraphIsSetUpCorrectly("small_image_3.png");
+    }
+
+    @Test
+    public void checkThatSeamGraphPixelReaderIsOperational() {
+        checkThatSeamGraphPixelReaderIsOperational("small_image_1.png");
+        checkThatSeamGraphPixelReaderIsOperational("small_image_2.png");
+        checkThatSeamGraphPixelReaderIsOperational("small_image_3.png");
+    }
+
+    public void checkThatSeamGraphPixelReaderIsOperational(String filename) {
+        Picture picture = PictureUtils.loadPicture(filename);
+        double[][] energies = SeamCarver.computeEnergies(picture, new DualGradientEnergyFunction());
+        DijkstraSeamFinderOptimized sf = new DijkstraSeamFinderOptimized(picture, energies);
+        SeamGraphPixelReader pixelReader = new SeamGraphPixelReader(sf);
+
+        int[] buf = new int[picture.width() * picture.height()];
+        pixelReader.getPixels(0,0,picture.width(),picture.height(), PixelFormat.getIntArgbInstance(), buf, 0, picture.width());
+
+        for (int x=0; x<picture.width(); ++x) {
+            for (int y=0; y<picture.height(); ++y) {
+                assertEquals(picture.getRGB(x,y),buf[y*picture.width() + x] );
+            }
+        }
     }
 
     @Test

@@ -3,6 +3,7 @@ package sample;
 import edu.princeton.cs.algs4.Picture;
 import javafx.scene.image.Image;
 import javafx.scene.image.PixelReader;
+import javafx.scene.paint.Color;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -58,6 +59,8 @@ enum DeletionCase {case1, case2, case3};
 interface RGBFetcher {
     // get the color of the pixel at coordinate (x,y)
     public int getRGB(int x, int y);
+
+    Color getColor(int x, int y);
 }
 
 class PictureWrapper implements RGBFetcher {
@@ -67,6 +70,14 @@ class PictureWrapper implements RGBFetcher {
     }
     public int getRGB(int x, int y) {
         return picture.getRGB(x,y);
+    }
+
+    public Color getColor(int x, int y) {
+        int rgb = picture.getRGB(x,y);
+        int r = (rgb >> 16) & 0xFF;
+        int g = (rgb >> 8) & 0xFF;
+        int b = (rgb >> 0) & 0xFF;
+        return Color.rgb(r,g,b);
     }
 }
 
@@ -80,6 +91,14 @@ class ImageWrapper implements RGBFetcher {
     public int getRGB(int x, int y) {
         return reader.getArgb(x,y);
     }
+    public Color getColor(int x, int y) {
+        int rgb = this.getRGB(x,y);
+        int r = (rgb >> 16) & 0xFF;
+        int g = (rgb >> 8) & 0xFF;
+        int b = (rgb >> 0) & 0xFF;
+        return Color.rgb(r,g,b);
+    }
+
 }
 
 class SeamGraphVertex {
@@ -367,6 +386,17 @@ public class DijkstraSeamFinderOptimized {
         this.verticalSeamGraph = new SeamGraphOptimized(new ImageWrapper(image), energies);
     }
 
+    public DijkstraSeamFinderOptimized(Image image) {
+        this.pathFinder = createPathFinder();
+        Picture p = new Picture(image.widthProperty().intValue(), image.heightProperty().intValue());
+        for (int x=0;x<image.widthProperty().intValue(); ++x) {
+            for (int y=0; y<image.heightProperty().intValue(); ++y) {
+                p.setRGB(x,y,image.getPixelReader().getArgb(x,y));
+            }
+        }
+        this.verticalSeamGraph = new SeamGraphOptimized(new ImageWrapper(image), SeamCarver.computeEnergies(p, new DualGradientEnergyFunction()));
+    }
+
     protected <G extends Graph<V, Edge<V>>, V> ShortestPathFinder<G, V, Edge<V>> createPathFinder() {
         return new DijkstraShortestPathFinder<>();
     }
@@ -383,6 +413,7 @@ public class DijkstraSeamFinderOptimized {
 
 
     public class SeamGraphOptimized implements Graph<SeamGraphVertex, Edge<SeamGraphVertex>> {
+        public RGBFetcher rgbfetcher;
         VerticalSeamGraphVertexSource start;
         VerticalSeamGraphVertexSink end;
 
@@ -397,6 +428,8 @@ public class DijkstraSeamFinderOptimized {
 
         // weight of edge = energy of 'from' vertex
         public SeamGraphOptimized(RGBFetcher picture, double[][] energies) {
+            this.rgbfetcher = picture;
+
             this.energyFunction = new DualGradientEnergyFunctionNodal();
             this.energies = energies;
 

@@ -8,9 +8,12 @@ import javafx.fxml.FXML;
 import javafx.scene.Cursor;
 import javafx.scene.Group;
 import javafx.scene.Scene;
+import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.image.PixelFormat;
+import javafx.scene.image.WritableImage;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
@@ -55,6 +58,10 @@ public class LayoutController {
 
     private Stage stage;
 
+    private DijkstraSeamFinderOptimized sf;
+
+    private Canvas canvas;
+
     @FXML
     void handleImageDrag(ActionEvent event) {
 
@@ -83,10 +90,23 @@ public class LayoutController {
         FileInputStream stream = new FileInputStream(file);
         Image image = new Image(stream);
         ImageView imageView = new ImageView();
-        imageView.setImage(image);
+        canvas = new Canvas(400,400);
+
+        this.setSeamFinder(new DijkstraSeamFinderOptimized(image));
+        drawImage(image);
+
+        //WritableImage writableImage = new WritableImage(new SeamGraphPixelReader(sf), image.widthProperty().intValue(), image.heightProperty().intValue());
+
+        //imageView.setImage(image);
+
+        // changed from
+        //imageView.setImage(image);
+        // end of changed from
+
+        Group root = new Group(canvas);
 
         //open a scene in a new window and display the image
-        Group root = new Group(imageView);
+        //Group root = new Group(imageView);
         Scene popupScene = new Scene(root);
 
         Stage popupStage = new Stage();
@@ -137,6 +157,36 @@ public class LayoutController {
 
     }
 
+    private void drawImage(Image image) {
+        byte[] imageData = new byte[image.widthProperty().intValue()
+                * image.heightProperty().intValue()
+                * 3];
+
+        int i=0;
+        for (int y=0;y<image.heightProperty().intValue();++y) {
+            for (int x=0;x<image.widthProperty().intValue();++x) {
+                int rgb = image.getPixelReader().getArgb(x,y);
+
+                int b = (rgb >> 0) & 0xFF;
+                int g = (rgb >> 8) & 0xFF;
+                int r = (rgb >> 16) & 0xFF;
+
+
+                imageData[i] = (byte) r;
+                imageData[i+1] = (byte) g;
+                imageData[i+2] = (byte) b;
+                i+=3;
+            }
+        }
+        canvas.getGraphicsContext2D().getPixelWriter().setPixels(0,0,
+                image.widthProperty().intValue(),
+                image.heightProperty().intValue(),
+                PixelFormat.getByteRgbInstance(),
+                imageData,
+                0,
+                image.widthProperty().intValue()*3);
+    }
+
     @FXML
     void undoLastChange(ActionEvent event) {
 
@@ -150,6 +200,10 @@ public class LayoutController {
     void setStageAndSetupListeners(Stage stage, FileChooser fileChooser) {
         this.fileChooser = fileChooser;
         this.stage = stage;
+    }
+
+    void setSeamFinder(DijkstraSeamFinderOptimized sf) {
+        this.sf = sf;
     }
 
     @FXML // This method is called by the FXMLLoader when initialization is complete
