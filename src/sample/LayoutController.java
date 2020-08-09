@@ -21,6 +21,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.assertj.core.internal.bytebuddy.implementation.bind.annotation.IgnoreForBinding;
 
+import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -90,7 +91,11 @@ public class LayoutController {
         FileInputStream stream = new FileInputStream(file);
         Image image = new Image(stream);
         ImageView imageView = new ImageView();
-        canvas = new Canvas(400,400);
+        Dimension screenSize = Toolkit.getDefaultToolkit ().getScreenSize ();
+        double canvasWidth = screenSize.getWidth();
+        double canvasHeight = screenSize.getHeight();
+
+        canvas = new Canvas(canvasWidth,canvasHeight);
 
         this.setSeamFinder(new DijkstraSeamFinderOptimized(image));
         drawImage(image);
