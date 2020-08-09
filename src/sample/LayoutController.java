@@ -67,6 +67,9 @@ public class LayoutController {
 
     private double prevY;
 
+    private boolean enableNorthResize = false;
+    private boolean enableWestResize = false;
+
     @FXML
     void handleImageDrag(ActionEvent event) {
 
@@ -157,12 +160,20 @@ public class LayoutController {
             @Override public void handle(MouseEvent e) {
                 if (Math.abs(e.getX() - imageView.getFitWidth()) < 10 && Math.abs(e.getY() - imageView.getFitHeight()) < 10) {
                     imageView.setCursor(Cursor.NW_RESIZE);
+                    enableNorthResize = true;
+                    enableWestResize = true;
                 } else if (Math.abs(e.getX() - imageView.getFitWidth()) < 10 ) {
                     imageView.setCursor(Cursor.W_RESIZE);
+                    enableNorthResize = false;
+                    enableWestResize = true;
                 } else if (Math.abs(e.getY() - imageView.getFitHeight()) < 10) {
                     imageView.setCursor(Cursor.N_RESIZE);
+                    enableNorthResize = true;
+                    enableWestResize = false;
                 } else {
                     imageView.setCursor(Cursor.DEFAULT);
+                    enableNorthResize = false;
+                    enableWestResize = false;
                 }
             }
         });
@@ -173,8 +184,8 @@ public class LayoutController {
                 System.out.println("Y coord of mouse event: " + e.getY());
                 double diffx = e.getX() - prevX;
                 double diffy = e.getY() - prevY;
-                imageView.setFitWidth(imageView.getFitWidth() + diffx);
-                imageView.setFitHeight(imageView.getFitHeight() + diffy);
+                if (diffx < 0 && enableWestResize) imageView.setFitWidth(imageView.getFitWidth() + diffx);
+                if (diffy < 0 && enableNorthResize) imageView.setFitHeight(imageView.getFitHeight() + diffy);
                 prevX = e.getX();
                 prevY = e.getY();
             }
