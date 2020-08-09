@@ -63,6 +63,10 @@ public class LayoutController {
 
     private Canvas canvas;
 
+    private double prevX;
+
+    private double prevY;
+
     @FXML
     void handleImageDrag(ActionEvent event) {
 
@@ -90,15 +94,17 @@ public class LayoutController {
         System.out.println("Uploading a new image...");
         FileInputStream stream = new FileInputStream(file);
         Image image = new Image(stream);
-        ImageView imageView = new ImageView();
+        ImageView imageView = new ImageView(image);
         Dimension screenSize = Toolkit.getDefaultToolkit ().getScreenSize ();
-        double canvasWidth = screenSize.getWidth();
-        double canvasHeight = screenSize.getHeight();
+        double windowWidth = screenSize.getWidth();
+        double windowHeight = screenSize.getHeight();
 
-        canvas = new Canvas(canvasWidth,canvasHeight);
+        //WritableImage writableImage = new WritableImage(image.widthProperty().intValue(), image.heightProperty().intValue());
+
+        //canvas = new Canvas(canvasWidth,canvasHeight);
 
         this.setSeamFinder(new DijkstraSeamFinderOptimized(image));
-        drawImage(image);
+        //drawImage(image);
 
         //WritableImage writableImage = new WritableImage(new SeamGraphPixelReader(sf), image.widthProperty().intValue(), image.heightProperty().intValue());
 
@@ -108,7 +114,7 @@ public class LayoutController {
         //imageView.setImage(image);
         // end of changed from
 
-        Group root = new Group(canvas);
+        Group root = new Group(imageView);
 
         //open a scene in a new window and display the image
         //Group root = new Group(imageView);
@@ -134,18 +140,26 @@ public class LayoutController {
         });
         */
 
+        popupStage.setWidth(windowWidth);
+        popupStage.setHeight(windowHeight);
         popupStage.setTitle("Displaying Image");
         popupStage.setScene(popupScene);
         popupStage.setResizable(true);
         popupStage.show();
 
+        System.out.println("imageViewFitWidth = " + imageView.getFitWidth());
+        System.out.println("imageViewFitHeight = " + imageView.getFitHeight());
+        imageView.setFitWidth(image.getWidth());
+        imageView.setFitHeight(image.getHeight());
+        imageView.setPreserveRatio(false);
+
         imageView.setOnMouseMoved(new EventHandler<MouseEvent>() {
             @Override public void handle(MouseEvent e) {
-                if (Math.abs(e.getX() - image.getWidth()) < 10 && Math.abs(e.getY() - image.getHeight()) < 10) {
+                if (Math.abs(e.getX() - imageView.getFitWidth()) < 10 && Math.abs(e.getY() - imageView.getFitHeight()) < 10) {
                     imageView.setCursor(Cursor.NW_RESIZE);
-                } else if (Math.abs(e.getX() - image.getWidth()) < 10 ) {
+                } else if (Math.abs(e.getX() - imageView.getFitWidth()) < 10 ) {
                     imageView.setCursor(Cursor.W_RESIZE);
-                } else if (Math.abs(e.getY() - image.getHeight()) < 10) {
+                } else if (Math.abs(e.getY() - imageView.getFitHeight()) < 10) {
                     imageView.setCursor(Cursor.N_RESIZE);
                 } else {
                     imageView.setCursor(Cursor.DEFAULT);
@@ -157,6 +171,23 @@ public class LayoutController {
             @Override public void handle(MouseEvent e) {
                 System.out.println("X coord of mouse event: " + e.getX());
                 System.out.println("Y coord of mouse event: " + e.getY());
+                double diffx = e.getX() - prevX;
+                double diffy = e.getY() - prevY;
+                imageView.setFitWidth(imageView.getFitWidth() + diffx);
+                imageView.setFitHeight(imageView.getFitHeight() + diffy);
+                prevX = e.getX();
+                prevY = e.getY();
+            }
+        });
+
+        imageView.setOnMousePressed(new EventHandler<MouseEvent>() {
+            public void handle(MouseEvent e) {
+                if (Math.abs(e.getX() - imageView.getFitWidth()) < 10 || Math.abs(e.getY() - imageView.getFitHeight()) < 10) {
+                    prevX = e.getX();
+                    prevY = e.getY();
+                    System.out.println("prevX = " + prevX);
+                    System.out.println("prevY = " + prevY);
+                }
             }
         });
 
@@ -183,6 +214,8 @@ public class LayoutController {
                 i+=3;
             }
         }
+        ImageView view = new ImageView();
+
         canvas.getGraphicsContext2D().getPixelWriter().setPixels(0,0,
                 image.widthProperty().intValue(),
                 image.heightProperty().intValue(),
