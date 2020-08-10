@@ -70,6 +70,9 @@ public class LayoutController {
     private boolean enableNorthResize = false;
     private boolean enableWestResize = false;
 
+    private double imageWidth = 0;
+    private double imageHeight = 0;
+
     @FXML
     void handleImageDrag(ActionEvent event) {
 
@@ -102,24 +105,30 @@ public class LayoutController {
         double windowWidth = screenSize.getWidth();
         double windowHeight = screenSize.getHeight();
 
-        WritableImage writableImage = new WritableImage(image.widthProperty().intValue(), image.heightProperty().intValue());
+        //WritableImage writableImage = new WritableImage(image.widthProperty().intValue(), image.heightProperty().intValue());
         canvas = new Canvas(windowWidth,windowHeight);
-        ImageView imageView = new ImageView();
+        //ImageView imageView = new ImageView();
+        Canvas imageCanvas = new Canvas(windowWidth,windowHeight);
+        this.sf = new DijkstraSeamFinderOptimized(image);
 
-        this.setSeamFinder(new DijkstraSeamFinderOptimized(image));
+        imageWidth = image.widthProperty().doubleValue();
+        imageHeight = image.heightProperty().doubleValue();
+
+        renderSeamGraph();
+
         //drawImage(image);
 
         //WritableImage writableImage = new WritableImage(new SeamGraphPixelReader(sf), image.widthProperty().intValue(), image.heightProperty().intValue());
 
-        loadDataIntoWritableImage(writableImage, image, sf);
-        imageView.setImage(writableImage);
+        //loadDataIntoWritableImage(writableImage, image, sf);
+        //imageView.setImage(writableImage);
         //imageView.setImage(image);
 
         // changed from
         //imageView.setImage(image);
         // end of changed from
 
-        Group root = new Group(imageView);
+        Group root = new Group(canvas);
 
         //open a scene in a new window and display the image
         //Group root = new Group(imageView);
@@ -152,50 +161,58 @@ public class LayoutController {
         popupStage.setResizable(true);
         popupStage.show();
 
-        System.out.println("imageViewFitWidth = " + imageView.getFitWidth());
+        /*
+        System.out.println("imageViewFitWidth = "  + imageView.getFitWidth());
         System.out.println("imageViewFitHeight = " + imageView.getFitHeight());
         imageView.setFitWidth(image.getWidth());
         imageView.setFitHeight(image.getHeight());
         imageView.setPreserveRatio(false);
+         */
 
-        imageView.setOnMouseMoved(new EventHandler<MouseEvent>() {
+        imageCanvas.setOnMouseMoved(new EventHandler<MouseEvent>() {
             @Override public void handle(MouseEvent e) {
-                if (Math.abs(e.getX() - imageView.getFitWidth()) < 10 && Math.abs(e.getY() - imageView.getFitHeight()) < 10) {
-                    imageView.setCursor(Cursor.NW_RESIZE);
+                if (Math.abs(e.getX() - imageWidth) < 10 && Math.abs(e.getY() - imageHeight) < 10) {
+                    imageCanvas.setCursor(Cursor.NW_RESIZE);
                     enableNorthResize = true;
                     enableWestResize = true;
-                } else if (Math.abs(e.getX() - imageView.getFitWidth()) < 10 ) {
-                    imageView.setCursor(Cursor.W_RESIZE);
+                } else if (Math.abs(e.getX() - imageWidth) < 10) {
+                    imageCanvas.setCursor(Cursor.W_RESIZE);
                     enableNorthResize = false;
                     enableWestResize = true;
-                } else if (Math.abs(e.getY() - imageView.getFitHeight()) < 10) {
-                    imageView.setCursor(Cursor.N_RESIZE);
+                } else if (Math.abs(e.getY() - imageHeight) < 10) {
+                    imageCanvas.setCursor(Cursor.N_RESIZE);
                     enableNorthResize = true;
                     enableWestResize = false;
                 } else {
-                    imageView.setCursor(Cursor.DEFAULT);
+                    imageCanvas.setCursor(Cursor.DEFAULT);
                     enableNorthResize = false;
                     enableWestResize = false;
                 }
             }
         });
 
-        imageView.setOnMouseDragged(new EventHandler<MouseEvent>() {
+        imageCanvas.setOnMouseDragged(new EventHandler<MouseEvent>() {
             @Override public void handle(MouseEvent e) {
                 System.out.println("X coord of mouse event: " + e.getX());
                 System.out.println("Y coord of mouse event: " + e.getY());
                 double diffx = e.getX() - prevX;
                 double diffy = e.getY() - prevY;
-                if (diffx < 0 && enableWestResize) imageView.setFitWidth(imageView.getFitWidth() + diffx);
-                if (diffy < 0 && enableNorthResize) imageView.setFitHeight(imageView.getFitHeight() + diffy);
+                if (diffx < 0 && enableWestResize) {
+                    imageWidth = imageWidth + diffx;
+                    imageCanvas.setWidth(imageWidth);
+                }
+                if (diffy < 0 && enableNorthResize) {
+                    imageHeight = imageHeight + diffy;
+                    imageCanvas.setHeight(imageHeight);
+                }
                 prevX = e.getX();
                 prevY = e.getY();
             }
         });
 
-        imageView.setOnMousePressed(new EventHandler<MouseEvent>() {
+        imageCanvas.setOnMousePressed(new EventHandler<MouseEvent>() {
             public void handle(MouseEvent e) {
-                if (Math.abs(e.getX() - imageView.getFitWidth()) < 10 || Math.abs(e.getY() - imageView.getFitHeight()) < 10) {
+                if (Math.abs(e.getX() - imageCanvas.getWidth()) < 10 || Math.abs(e.getY() - imageCanvas.getHeight()) < 10) {
                     prevX = e.getX();
                     prevY = e.getY();
                     System.out.println("prevX = " + prevX);
@@ -215,36 +232,32 @@ public class LayoutController {
         }
     }
 
-    private void drawImage(Image image) {
-        byte[] imageData = new byte[image.widthProperty().intValue()
-                * image.heightProperty().intValue()
-                * 3];
+    private void renderSeamGraph() {
+        byte[] imageData = new byte[sf.verticalSeamGraph.numHorizVertices * sf.verticalSeamGraph.numVertVertices * 3];
 
         int i=0;
-        for (int y=0;y<image.heightProperty().intValue();++y) {
-            for (int x=0;x<image.widthProperty().intValue();++x) {
-                int rgb = image.getPixelReader().getArgb(x,y);
+        for (int y=0;y<sf.verticalSeamGraph.numVertVertices;++y) {
+            for (int x=0;x<sf.verticalSeamGraph.numHorizVertices;++x) {
+                int rgb = sf.verticalSeamGraph.rgbfetcher.getRGB(x,y);
 
                 int b = (rgb >> 0) & 0xFF;
                 int g = (rgb >> 8) & 0xFF;
                 int r = (rgb >> 16) & 0xFF;
 
-
-                imageData[i] = (byte) r;
+                imageData[i] =   (byte) r;
                 imageData[i+1] = (byte) g;
                 imageData[i+2] = (byte) b;
                 i+=3;
             }
         }
-        ImageView view = new ImageView();
 
         canvas.getGraphicsContext2D().getPixelWriter().setPixels(0,0,
-                image.widthProperty().intValue(),
-                image.heightProperty().intValue(),
+                sf.verticalSeamGraph.numHorizVertices,
+                sf.verticalSeamGraph.numVertVertices,
                 PixelFormat.getByteRgbInstance(),
                 imageData,
                 0,
-                image.widthProperty().intValue()*3);
+                sf.verticalSeamGraph.numHorizVertices*3);
     }
 
     @FXML
