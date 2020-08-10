@@ -61,7 +61,7 @@ public class LayoutController {
 
     private DijkstraSeamFinderOptimized sf;
 
-    private Canvas canvas;
+    private Canvas imageCanvas;
 
     private double prevX;
 
@@ -106,9 +106,8 @@ public class LayoutController {
         double windowHeight = screenSize.getHeight();
 
         //WritableImage writableImage = new WritableImage(image.widthProperty().intValue(), image.heightProperty().intValue());
-        canvas = new Canvas(windowWidth,windowHeight);
         //ImageView imageView = new ImageView();
-        Canvas imageCanvas = new Canvas(windowWidth,windowHeight);
+        imageCanvas = new Canvas(image.getWidth(),image.getHeight());
         this.sf = new DijkstraSeamFinderOptimized(image);
 
         imageWidth = image.widthProperty().doubleValue();
@@ -128,7 +127,7 @@ public class LayoutController {
         //imageView.setImage(image);
         // end of changed from
 
-        Group root = new Group(canvas);
+        Group root = new Group(imageCanvas);
 
         //open a scene in a new window and display the image
         //Group root = new Group(imageView);
@@ -171,15 +170,15 @@ public class LayoutController {
 
         imageCanvas.setOnMouseMoved(new EventHandler<MouseEvent>() {
             @Override public void handle(MouseEvent e) {
-                if (Math.abs(e.getX() - imageWidth) < 10 && Math.abs(e.getY() - imageHeight) < 10) {
+                if (Math.abs(e.getX() - imageCanvas.getWidth()) < 10 && Math.abs(e.getY() - imageCanvas.getHeight()) < 10) {
                     imageCanvas.setCursor(Cursor.NW_RESIZE);
                     enableNorthResize = true;
                     enableWestResize = true;
-                } else if (Math.abs(e.getX() - imageWidth) < 10) {
+                } else if (Math.abs(e.getX() - imageCanvas.getWidth()) < 10) {
                     imageCanvas.setCursor(Cursor.W_RESIZE);
                     enableNorthResize = false;
                     enableWestResize = true;
-                } else if (Math.abs(e.getY() - imageHeight) < 10) {
+                } else if (Math.abs(e.getY() - imageCanvas.getHeight()) < 10) {
                     imageCanvas.setCursor(Cursor.N_RESIZE);
                     enableNorthResize = true;
                     enableWestResize = false;
@@ -198,12 +197,12 @@ public class LayoutController {
                 double diffx = e.getX() - prevX;
                 double diffy = e.getY() - prevY;
                 if (diffx < 0 && enableWestResize) {
-                    imageWidth = imageWidth + diffx;
-                    imageCanvas.setWidth(imageWidth);
+                    //imageWidth = imageWidth + diffx;
+                    imageCanvas.setWidth(imageCanvas.getWidth() + diffx);
                 }
                 if (diffy < 0 && enableNorthResize) {
-                    imageHeight = imageHeight + diffy;
-                    imageCanvas.setHeight(imageHeight);
+                    //imageHeight = imageHeight + diffy;
+                    imageCanvas.setHeight(imageCanvas.getHeight() + diffy);
                 }
                 prevX = e.getX();
                 prevY = e.getY();
@@ -251,7 +250,7 @@ public class LayoutController {
             }
         }
 
-        canvas.getGraphicsContext2D().getPixelWriter().setPixels(0,0,
+        imageCanvas.getGraphicsContext2D().getPixelWriter().setPixels(0,0,
                 sf.verticalSeamGraph.numHorizVertices,
                 sf.verticalSeamGraph.numVertVertices,
                 PixelFormat.getByteRgbInstance(),
