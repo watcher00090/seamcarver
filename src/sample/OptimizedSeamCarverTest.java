@@ -1,6 +1,11 @@
 package sample;
 
 import edu.princeton.cs.algs4.Picture;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.concurrent.Task;
+import javafx.concurrent.WorkerStateEvent;
+import javafx.event.EventHandler;
 import javafx.scene.image.Image;
 
 
@@ -15,6 +20,8 @@ import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -250,6 +257,109 @@ public class OptimizedSeamCarverTest {
         checkThatPictureWrapperIsWorkingCorrectly("small_image_5.png");
     }
 
+    @Test
+    public void checkThatWeCanRemoveSeamsRepeatedly() {
+        checkThatWeCanRemoveSeamsRepeatedly("small_image_3.png");
+        checkThatWeCanRemoveSeamsRepeatedly("small_image_2.png");
+        checkThatWeCanRemoveSeamsRepeatedly("small_image_1.png");
+    }
+
+    public void checkThatWeCanRemoveSeamsRepeatedly(String filename) {
+        Picture picture = PictureUtils.loadPicture(filename);
+        DijkstraSeamFinderOptimized sf = new DijkstraSeamFinderOptimized(picture, SeamCarver.computeEnergies(picture,new DualGradientEnergyFunction()));
+        sf.DEBUG_MODE = true;
+
+        System.out.println("picture.width = " + picture.width() + ", picture.height = " + picture.height());
+
+        sf.removeLowestEnergySeam();
+        assertEquals(true, checkThatNeighborsHaveCorrectCoordinates(sf.verticalSeamGraph));
+        assertEquals(true, checkThatEdgeEndpointsHaveCorrectCoordinates(sf.verticalSeamGraph));
+        assertEquals(sf.verticalSeamGraph.numHorizVertices, picture.width() - 1);
+
+        sf.removeLowestEnergySeam();
+        assertEquals(true, checkThatNeighborsHaveCorrectCoordinates(sf.verticalSeamGraph));
+        assertEquals(true, checkThatEdgeEndpointsHaveCorrectCoordinates(sf.verticalSeamGraph));
+        assertEquals(sf.verticalSeamGraph.numHorizVertices, picture.width() - 2);
+
+        sf.removeLowestEnergySeam();
+        assertEquals(true, checkThatNeighborsHaveCorrectCoordinates(sf.verticalSeamGraph));
+        assertEquals(true, checkThatEdgeEndpointsHaveCorrectCoordinates(sf.verticalSeamGraph));
+        assertEquals(sf.verticalSeamGraph.numHorizVertices, picture.width() - 3);
+
+        sf.removeLowestEnergySeam();
+        assertEquals(true, checkThatNeighborsHaveCorrectCoordinates(sf.verticalSeamGraph));
+        assertEquals(true, checkThatEdgeEndpointsHaveCorrectCoordinates(sf.verticalSeamGraph));
+        assertEquals(sf.verticalSeamGraph.numHorizVertices, picture.width() - 4);
+
+        sf.removeLowestEnergySeam();
+        assertEquals(true, checkThatNeighborsHaveCorrectCoordinates(sf.verticalSeamGraph));
+        assertEquals(true, checkThatEdgeEndpointsHaveCorrectCoordinates(sf.verticalSeamGraph));
+        assertEquals(sf.verticalSeamGraph.numHorizVertices, picture.width() - 5);
+
+        sf.removeLowestEnergySeam();
+        assertEquals(true, checkThatNeighborsHaveCorrectCoordinates(sf.verticalSeamGraph));
+        assertEquals(true, checkThatEdgeEndpointsHaveCorrectCoordinates(sf.verticalSeamGraph));
+        assertEquals(sf.verticalSeamGraph.numHorizVertices, picture.width() - 6);
+
+        assertEquals(sf.verticalSeamGraph.numVertVertices, picture.height());
+    }
+
+
+    //@Test
+    public void uiMultithreadedInteractionsTest() {
+        uiMultithreadedInteractionsTest("small_image_1.png");
+    }
+
+    public void uiMultithreadedInteractionsTest(String filename) {
+        Picture picture = PictureUtils.loadPicture(filename);
+        DijkstraSeamFinderOptimized sf = new DijkstraSeamFinderOptimized(picture,SeamCarver.computeEnergies(picture,new DualGradientEnergyFunction()));
+        ExecutorService exec = Executors.newSingleThreadExecutor(r -> {
+            Thread t = new Thread(r);
+            t.setDaemon(true); // allows app to exit if tasks are running
+            return t ;
+        });
+        int numSeamsToRemove = 200;
+        long[] timeToRemoveSeamMillis = new long[numSeamsToRemove];
+
+        IntegerProperty pendingTasks = new SimpleIntegerProperty(0);
+
+        for (int i=0; i<numSeamsToRemove; ++i) {
+            Task<Integer> task = new Task<>() {
+                @Override
+                public Integer call() {
+                    int x=0;
+                    for (int i=0; i<3; ++i) {
+                        x = x+ 5 % i * i + 8 - 10000 / i;
+                    }
+                    return x;
+                    //sf.removeLowestEnergySeam();
+                    //return sf.getTaskResult();
+                }
+            };
+            task.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+                @Override
+                public void handle(WorkerStateEvent workerStateEvent) {
+                    System.out.println("Task completed!");
+                    /*
+                    SeamGraphTaskResult res = (SeamGraphTaskResult) workerStateEvent.getSource().getValue();
+                    System.out.println(res.seam);
+
+                     */
+                    System.out.println("pending task count dropping from" + pendingTasks.get() + "to " + (pendingTasks.get() - 1));
+                    pendingTasks.set(pendingTasks.get()-1);
+
+
+                    //renderSeamGraph(res.imageData, res.numHorizVertices, res.numVertVertices);
+                }
+            });
+            long start = System.currentTimeMillis();
+            exec.submit(task); // single-threaded executor
+            long end = System.currentTimeMillis();
+            timeToRemoveSeamMillis[i] = (end - start);
+            //System.out.println("i = " + i + ", time taken to remove seam = " + timeToRemoveSeamMillis[i]);
+        }
+    }
+
     public void checkThatPictureWrapperIsWorkingCorrectly(String filename) {
         try {
             Picture picture = PictureUtils.loadPicture(filename);
@@ -427,10 +537,6 @@ public class OptimizedSeamCarverTest {
                 energies[i][j] += (Math.random() / 1.0E5);
             }
         }
-    }
-
-    @Test public void testThatSameSeamIsFoundAfterRemovingSeamsRepeatedly() {
-        assertTrue(false);
     }
 
     @Test

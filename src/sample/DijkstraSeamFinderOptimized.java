@@ -422,6 +422,7 @@ public class DijkstraSeamFinderOptimized {
         res.imageData = imageData;
         res.numHorizVertices = this.verticalSeamGraph.numHorizVertices;
         res.numVertVertices = this.verticalSeamGraph.numVertVertices;
+        res.seam = lastSeam;
         return res;
     }
 
@@ -640,7 +641,11 @@ public class DijkstraSeamFinderOptimized {
 
             correctXCoordinatesOfRightVertices(v);
 
+            System.out.println("removing a seam...");
+
             for (int i = 1; i < lastSeam.size(); ++i) {
+
+                System.out.println("processing a vertex in the seam removal method...");
 
                 int i1 = lastSeam.get(i-1);
                 int i2 = lastSeam.get(i);
@@ -1083,28 +1088,18 @@ public class DijkstraSeamFinderOptimized {
             }
         }
 
-        //verticalSeamGraph.removeSeam(ret);
-
-
-        /*
-        List<SeamGraphVertex> pathVertices = sp.vertices();
-        SeamGraphVertex vertex = pathVertices.get(4);
-        for (Edge<SeamGraphVertex> edge : verticalSeamGraph.outgoingEdgesFrom(vertex)) {
-            System.out.println("debugging");
+        for (int i=0; i<ret.size(); ++i) {
+            System.out.print(ret.get(i) + ", ");
         }
-
-        vertex = pathVertices.get(5);
-        for (Edge<SeamGraphVertex> edge : verticalSeamGraph.outgoingEdgesFrom(vertex)) {
-            System.out.println("debugging");
-        }
-        */
 
         return ret;
     }
 
     public void removeLowestEnergySeam() {
         List<Integer> seam = this.findVerticalSeam();
+        this.lastSeam = seam;
         this.verticalSeamGraph.removeSeam(seam);
+        System.out.println("Got here!");
     }
 
     // for testing purposes
