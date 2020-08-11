@@ -370,24 +370,23 @@ class DualGradientEnergyFunctionNodal implements NodalEnergyFunction {
 public class DijkstraSeamFinderOptimized {
     public boolean DEBUG_MODE = false;
 
-    private final ShortestPathFinder<Graph<SeamGraphVertex, Edge<SeamGraphVertex>>, SeamGraphVertex, Edge<SeamGraphVertex>> pathFinder;
+    private final ShortestPathFinder<Graph<SeamGraphVertex, Edge<SeamGraphVertex>>, SeamGraphVertex, Edge<SeamGraphVertex>> pf;
     public List<Integer> lastSeam = null;
     public SeamGraphVertex topRowVertex = null;
     public SeamGraphOptimized verticalSeamGraph;
 
     public DijkstraSeamFinderOptimized(Picture picture, double[][] energies) {
-        this.pathFinder = createPathFinder();
+        this.pf = createPathFinder();
         this.verticalSeamGraph = new SeamGraphOptimized(new PictureWrapper(picture), energies);
     }
 
-
     public DijkstraSeamFinderOptimized(Image image, double[][] energies) {
-        this.pathFinder = createPathFinder();
+        this.pf = createPathFinder();
         this.verticalSeamGraph = new SeamGraphOptimized(new ImageWrapper(image), energies);
     }
 
     public DijkstraSeamFinderOptimized(Image image) {
-        this.pathFinder = createPathFinder();
+        this.pf = createPathFinder();
         Picture p = new Picture(image.widthProperty().intValue(), image.heightProperty().intValue());
         for (int x=0;x<image.widthProperty().intValue(); ++x) {
             for (int y=0; y<image.heightProperty().intValue(); ++y) {
@@ -400,6 +399,54 @@ public class DijkstraSeamFinderOptimized {
     protected <G extends Graph<V, Edge<V>>, V> ShortestPathFinder<G, V, Edge<V>> createPathFinder() {
         return new DijkstraShortestPathFinder<>();
     }
+
+    public SeamGraphTaskResult getTaskResult() {
+        SeamGraphTaskResult res = new SeamGraphTaskResult();
+        byte[] imageData = new byte[this.verticalSeamGraph.numHorizVertices * this.verticalSeamGraph.numVertVertices * 3];
+
+        int i = 0;
+        for (int y = 0; y < this.verticalSeamGraph.numVertVertices; ++y) {
+            for (int x = 0; x < this.verticalSeamGraph.numHorizVertices; ++x) {
+                int rgb = this.verticalSeamGraph.rgbfetcher.getRGB(x, y);
+
+                int b = (rgb >> 0) & 0xFF;
+                int g = (rgb >> 8) & 0xFF;
+                int r = (rgb >> 16) & 0xFF;
+
+                imageData[i] = (byte) r;
+                imageData[i + 1] = (byte) g;
+                imageData[i + 2] = (byte) b;
+                i += 3;
+            }
+        }
+        res.imageData = imageData;
+        res.numHorizVertices = this.verticalSeamGraph.numHorizVertices;
+        res.numVertVertices = this.verticalSeamGraph.numVertVertices;
+        return res;
+    }
+
+    public byte[] getImageData() {
+        byte[] imageData = new byte[this.verticalSeamGraph.numHorizVertices * this.verticalSeamGraph.numVertVertices * 3];
+
+        int i = 0;
+        for (int y = 0; y < this.verticalSeamGraph.numVertVertices; ++y) {
+            for (int x = 0; x < this.verticalSeamGraph.numHorizVertices; ++x) {
+                int rgb = this.verticalSeamGraph.rgbfetcher.getRGB(x, y);
+
+                int b = (rgb >> 0) & 0xFF;
+                int g = (rgb >> 8) & 0xFF;
+                int r = (rgb >> 16) & 0xFF;
+
+                imageData[i] = (byte) r;
+                imageData[i + 1] = (byte) g;
+                imageData[i + 2] = (byte) b;
+                i += 3;
+            }
+        }
+        return imageData;
+    }
+
+
     /* The vertex for a pixel is numbered by the (x,y) location of the pixel.
      * (0,0) (1,0) (2,0) (3,0) (4,0) .....
      * (0,1) (1,1) (2,1) (3,1) (4,1) .....
@@ -427,6 +474,7 @@ public class DijkstraSeamFinderOptimized {
         public List<Integer> debugSeam;
 
         // weight of edge = energy of 'from' vertex
+        // the energy of the source and sink vertices is by convention 0
         public SeamGraphOptimized(RGBFetcher picture, double[][] energies) {
             this.rgbfetcher = picture;
 
@@ -585,7 +633,7 @@ public class DijkstraSeamFinderOptimized {
             start.edgeList.remove((lastSeam.get(0).intValue())); // remove the edge from the source
 
             SeamGraphVertex v1;
-            SeamGraphVertex v2;
+            SeamGraphVertex v2 = null;
 
             DeletionCase deletionCase;
             v.inSeam = true;
@@ -715,7 +763,13 @@ public class DijkstraSeamFinderOptimized {
 
                 }
 
+             if (v1.left != null) computeEnergy(v1.left);
+             if (v1.right != null) computeEnergy(v1.right);
+
             }
+
+            if (v2.left != null) computeEnergy(v2.left);
+            if (v2.right != null) computeEnergy(v2.right);
 
             this.numHorizVertices--;
         }
@@ -1014,12 +1068,9 @@ public class DijkstraSeamFinderOptimized {
 
     }
 
-
     public List<Integer> findVerticalSeam() {
         List<Integer> ret = new ArrayList<>();
 
-        DijkstraShortestPathFinder<Graph<SeamGraphVertex, Edge<SeamGraphVertex>>, SeamGraphVertex, Edge<SeamGraphVertex>> pf;
-        pf = new DijkstraShortestPathFinder<>();
         ShortestPath<SeamGraphVertex, Edge<SeamGraphVertex>> sp;
         sp = pf.findShortestPath(verticalSeamGraph, verticalSeamGraph.start, verticalSeamGraph.end);
 
@@ -1048,9 +1099,12 @@ public class DijkstraSeamFinderOptimized {
         }
         */
 
-
-
         return ret;
+    }
+
+    public void removeLowestEnergySeam() {
+        List<Integer> seam = this.findVerticalSeam();
+        this.verticalSeamGraph.removeSeam(seam);
     }
 
     // for testing purposes

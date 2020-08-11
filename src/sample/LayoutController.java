@@ -2,9 +2,11 @@ package sample;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.geometry.Bounds;
 import javafx.scene.Cursor;
 import javafx.scene.Group;
 import javafx.scene.Scene;
@@ -26,7 +28,19 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.net.URL;
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 import java.util.ResourceBundle;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import javafx.application.Application;
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.concurrent.Task;
 
 enum CursorMode {
     NW_RESIZE, N_RESIZE, W_RESIZE, NORMAL;
@@ -72,6 +86,16 @@ public class LayoutController {
 
     private double imageWidth = 0;
     private double imageHeight = 0;
+
+    private boolean enableImagePan = false;
+
+    private AtomicInteger seamGraphResizerTaskCount = new AtomicInteger(0);
+
+    private ExecutorService exec = Executors.newSingleThreadExecutor(r -> {
+        Thread t = new Thread(r);
+        t.setDaemon(true); // allows app to exit if tasks are running
+        return t ;
+    });
 
     @FXML
     void handleImageDrag(ActionEvent event) {
@@ -174,21 +198,27 @@ public class LayoutController {
                     imageCanvas.setCursor(Cursor.NW_RESIZE);
                     enableNorthResize = true;
                     enableWestResize = true;
+                    enableImagePan = false;
                 } else if (Math.abs(e.getX() - imageCanvas.getWidth()) < 10) {
                     imageCanvas.setCursor(Cursor.W_RESIZE);
                     enableNorthResize = false;
                     enableWestResize = true;
+                    enableImagePan = false;
                 } else if (Math.abs(e.getY() - imageCanvas.getHeight()) < 10) {
                     imageCanvas.setCursor(Cursor.N_RESIZE);
                     enableNorthResize = true;
                     enableWestResize = false;
+                    enableImagePan = false;
                 } else {
                     imageCanvas.setCursor(Cursor.DEFAULT);
                     enableNorthResize = false;
                     enableWestResize = false;
+                    enableImagePan = true;
                 }
             }
         });
+
+        IntegerProperty pendingTasks = new SimpleIntegerProperty(0);
 
         imageCanvas.setOnMouseDragged(new EventHandler<MouseEvent>() {
             @Override public void handle(MouseEvent e) {
@@ -196,9 +226,34 @@ public class LayoutController {
                 System.out.println("Y coord of mouse event: " + e.getY());
                 double diffx = e.getX() - prevX;
                 double diffy = e.getY() - prevY;
+
                 if (diffx < 0 && enableWestResize) {
                     //imageWidth = imageWidth + diffx;
                     imageCanvas.setWidth(imageCanvas.getWidth() + diffx);
+
+                    /*
+                    System.out.println("diffx = " + diffx);
+                    for (int k=0; k<Math.abs(diffx); ++k) {
+                        sf.removeLowestEnergySeam();
+                    }
+                    renderSeamGraph();
+                    */
+
+                    Task<SeamGraphTaskResult> task = new Task<>() {
+                        @Override public SeamGraphTaskResult call() {
+                            sf.removeLowestEnergySeam();
+                            return sf.getTaskResult();
+                        }
+                    };
+                    task.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+                        @Override
+                        public void handle(WorkerStateEvent workerStateEvent) {
+                            System.out.println("Task completed!");
+                            SeamGraphTaskResult res = (SeamGraphTaskResult) workerStateEvent.getSource().getValue();
+                            renderSeamGraph(res.imageData, res.numHorizVertices, res.numVertVertices);
+                        }
+                    });
+                    exec.submit(task); // single-threaded executor
                 }
                 if (diffy < 0 && enableNorthResize) {
                     //imageHeight = imageHeight + diffy;
@@ -231,6 +286,16 @@ public class LayoutController {
         }
     }
 
+    private void renderSeamGraph(byte[] imageData, int numHorizVertices, int numVertVertices) {
+        imageCanvas.getGraphicsContext2D().getPixelWriter().setPixels(0,0,
+                                                                      numHorizVertices,
+                                                                      numVertVertices,
+                                                                      PixelFormat.getByteRgbInstance(),
+                                                                      imageData, 0,
+                                                                      numHorizVertices*3);
+    }
+
+    @Deprecated
     private void renderSeamGraph() {
         byte[] imageData = new byte[sf.verticalSeamGraph.numHorizVertices * sf.verticalSeamGraph.numVertVertices * 3];
 
