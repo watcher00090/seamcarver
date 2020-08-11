@@ -5,7 +5,7 @@ package sample;
  *
  * @param <V> The vertex type.
  */
-public final class Edge<V> extends BaseEdge<V, Edge<V>> {
+public class Edge<V> extends BaseEdge<V, Edge<V>> {
     public Edge(V from, V to, double weight) {
         super(from, to, weight);
     }

@@ -264,6 +264,21 @@ public class OptimizedSeamCarverTest {
         checkThatWeCanRemoveSeamsRepeatedly("small_image_1.png");
     }
 
+    @Test
+    public void testFindVerticalSeamVertice() {
+        testFindVerticalSeamVertices("small_image_1.png");
+        testFindVerticalSeamVertices("small_image_2.png");
+        testFindVerticalSeamVertices("small_image_3.png");
+        testFindVerticalSeamVertices("small_image_4.png");
+        testFindVerticalSeamVertices("small_image_5.png");
+    }
+
+    private void testFindVerticalSeamVertices(String filename) {
+        Picture picture = PictureUtils.loadPicture(filename);
+        DijkstraSeamFinderOptimized sf = new DijkstraSeamFinderOptimized(picture, SeamCarver.computeEnergies(picture,new DualGradientEnergyFunction()));
+        assertTrue(false);
+    }
+
     public void checkThatWeCanRemoveSeamsRepeatedly(String filename) {
         Picture picture = PictureUtils.loadPicture(filename);
         DijkstraSeamFinderOptimized sf = new DijkstraSeamFinderOptimized(picture, SeamCarver.computeEnergies(picture,new DualGradientEnergyFunction()));
