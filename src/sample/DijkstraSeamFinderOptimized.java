@@ -648,11 +648,11 @@ public class DijkstraSeamFinderOptimized {
 
             v.inSeam = true;
 
-            System.out.println("removing a seam...");
+            //System.out.println("removing a seam...");
 
             for (int i = 1; i < lastSeam.size(); ++i) {
 
-                System.out.println("processing a vertex in the seam removal method...");
+                //System.out.println("processing a vertex in the seam removal method...");
 
                 v1 = lastSeam.get(i-1);
                 v2 = lastSeam.get(i);
@@ -1279,7 +1279,7 @@ public class DijkstraSeamFinderOptimized {
 
         List<SeamGraphVertex> ret = new LinkedList<>();
         List<Edge<SeamGraphVertex>> seamEdges = sp.edges();
-        for (int i=1; i<seamEdges.size()-1; ++i) {
+        for (int i=0; i<seamEdges.size()-1; ++i) {
             ret.add(seamEdges.get(i).to);
         }
 

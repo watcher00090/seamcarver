@@ -293,6 +293,7 @@ public class LayoutController {
                                                                       PixelFormat.getByteRgbInstance(),
                                                                       imageData, 0,
                                                                       numHorizVertices*3);
+        System.out.println("renderSeamGraph complete...");
     }
 
     @Deprecated

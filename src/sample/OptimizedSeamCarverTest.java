@@ -265,7 +265,7 @@ public class OptimizedSeamCarverTest {
     }
 
     @Test
-    public void testFindVerticalSeamVertice() {
+    public void testFindVerticalSeamVertices() {
         testFindVerticalSeamVertices("small_image_1.png");
         testFindVerticalSeamVertices("small_image_2.png");
         testFindVerticalSeamVertices("small_image_3.png");
@@ -289,31 +289,37 @@ public class OptimizedSeamCarverTest {
         sf.removeLowestEnergySeam();
         assertEquals(true, checkThatNeighborsHaveCorrectCoordinates(sf.verticalSeamGraph));
         assertEquals(true, checkThatEdgeEndpointsHaveCorrectCoordinates(sf.verticalSeamGraph));
+        assertEquals(sf.verticalSeamGraph.start.edgeList.size(), picture.width() - 1);
         assertEquals(sf.verticalSeamGraph.numHorizVertices, picture.width() - 1);
 
         sf.removeLowestEnergySeam();
         assertEquals(true, checkThatNeighborsHaveCorrectCoordinates(sf.verticalSeamGraph));
         assertEquals(true, checkThatEdgeEndpointsHaveCorrectCoordinates(sf.verticalSeamGraph));
+        assertEquals(sf.verticalSeamGraph.start.edgeList.size(), picture.width() - 2);
         assertEquals(sf.verticalSeamGraph.numHorizVertices, picture.width() - 2);
 
         sf.removeLowestEnergySeam();
         assertEquals(true, checkThatNeighborsHaveCorrectCoordinates(sf.verticalSeamGraph));
         assertEquals(true, checkThatEdgeEndpointsHaveCorrectCoordinates(sf.verticalSeamGraph));
+        assertEquals(sf.verticalSeamGraph.start.edgeList.size(), picture.width() - 3);
         assertEquals(sf.verticalSeamGraph.numHorizVertices, picture.width() - 3);
 
         sf.removeLowestEnergySeam();
         assertEquals(true, checkThatNeighborsHaveCorrectCoordinates(sf.verticalSeamGraph));
         assertEquals(true, checkThatEdgeEndpointsHaveCorrectCoordinates(sf.verticalSeamGraph));
+        assertEquals(sf.verticalSeamGraph.start.edgeList.size(), picture.width() - 4);
         assertEquals(sf.verticalSeamGraph.numHorizVertices, picture.width() - 4);
 
         sf.removeLowestEnergySeam();
         assertEquals(true, checkThatNeighborsHaveCorrectCoordinates(sf.verticalSeamGraph));
         assertEquals(true, checkThatEdgeEndpointsHaveCorrectCoordinates(sf.verticalSeamGraph));
+        assertEquals(sf.verticalSeamGraph.start.edgeList.size(), picture.width() - 5);
         assertEquals(sf.verticalSeamGraph.numHorizVertices, picture.width() - 5);
 
         sf.removeLowestEnergySeam();
         assertEquals(true, checkThatNeighborsHaveCorrectCoordinates(sf.verticalSeamGraph));
         assertEquals(true, checkThatEdgeEndpointsHaveCorrectCoordinates(sf.verticalSeamGraph));
+        assertEquals(sf.verticalSeamGraph.start.edgeList.size(), picture.width() - 6);
         assertEquals(sf.verticalSeamGraph.numHorizVertices, picture.width() - 6);
 
         assertEquals(sf.verticalSeamGraph.numVertVertices, picture.height());
