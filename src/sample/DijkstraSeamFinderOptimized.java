@@ -398,29 +398,34 @@ public class DijkstraSeamFinderOptimized {
     }
 
     public SeamGraphTaskResult getTaskResult() {
-        SeamGraphTaskResult res = new SeamGraphTaskResult();
-        byte[] imageData = new byte[this.verticalSeamGraph.numHorizVertices * this.verticalSeamGraph.numVertVertices * 3];
+        try {
+            SeamGraphTaskResult res = new SeamGraphTaskResult();
+            byte[] imageData = new byte[this.verticalSeamGraph.numHorizVertices * this.verticalSeamGraph.numVertVertices * 3];
 
-        int i = 0;
-        for (int y = 0; y < this.verticalSeamGraph.numVertVertices; ++y) {
-            for (int x = 0; x < this.verticalSeamGraph.numHorizVertices; ++x) {
-                int rgb = this.verticalSeamGraph.rgbfetcher.getRGB(x, y);
+            int i = 0;
+            for (int y = 0; y < this.verticalSeamGraph.numVertVertices; ++y) {
+                for (int x = 0; x < this.verticalSeamGraph.numHorizVertices; ++x) {
+                    int rgb = this.verticalSeamGraph.rgbfetcher.getRGB(x, y);
 
-                int b = (rgb >> 0) & 0xFF;
-                int g = (rgb >> 8) & 0xFF;
-                int r = (rgb >> 16) & 0xFF;
+                    int b = (rgb >> 0) & 0xFF;
+                    int g = (rgb >> 8) & 0xFF;
+                    int r = (rgb >> 16) & 0xFF;
 
-                imageData[i] = (byte) r;
-                imageData[i + 1] = (byte) g;
-                imageData[i + 2] = (byte) b;
-                i += 3;
+                    imageData[i] = (byte) r;
+                    imageData[i + 1] = (byte) g;
+                    imageData[i + 2] = (byte) b;
+                    i += 3;
+                }
             }
+            res.imageData = imageData;
+            res.numHorizVertices = this.verticalSeamGraph.numHorizVertices;
+            res.numVertVertices = this.verticalSeamGraph.numVertVertices;
+            res.seam = lastSeam;
+            return res;
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        res.imageData = imageData;
-        res.numHorizVertices = this.verticalSeamGraph.numHorizVertices;
-        res.numVertVertices = this.verticalSeamGraph.numVertVertices;
-        res.seam = lastSeam;
-        return res;
+        return null;
     }
 
     public byte[] getImageData() {
@@ -637,6 +642,9 @@ public class DijkstraSeamFinderOptimized {
         public void removeSeam(List<SeamGraphVertex> lastSeam, List<Edge<SeamGraphVertex>> seamEdges) {
             SeamGraphVertex v = lastSeam.get(0); // for traversing the graph
 
+            if (start.edgeList.size() <= v.coord.x) {
+                System.out.println('O');
+            }
             start.edgeList.remove(v.top.edgeList.get(v.coord.x)); // remove the edge from the source
             correctXCoordinatesOfRightVertices(v); // correct x coordinate of 1st vertex
 
@@ -1282,6 +1290,9 @@ public class DijkstraSeamFinderOptimized {
         for (int i=0; i<seamEdges.size()-1; ++i) {
             ret.add(seamEdges.get(i).to);
         }
+
+        //System.out.println("removeLowestEnergySeam::numHorizVertices = " + verticalSeamGraph.numHorizVertices);
+        //System.out.println("removeLowestEnergySeam::start.edgeList.size() = " + verticalSeamGraph.start.edgeList.size());
 
         verticalSeamGraph.removeSeam(ret, seamEdges);
     }

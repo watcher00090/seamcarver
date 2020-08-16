@@ -266,6 +266,22 @@ public class LayoutController {
                                 return sf.getTaskResult();
                             }
                         };
+                        task.setOnFailed(new EventHandler<WorkerStateEvent>() {
+                            @Override
+                            public void handle(WorkerStateEvent workerStateEvent) {
+                                System.out.println("Task failed, printing workerStateEvent...");
+                                System.out.println(workerStateEvent.toString());
+                                workerStateEvent.getSource().getException().printStackTrace();
+                                System.exit(1);
+                            }
+                        });
+                        task.setOnCancelled(new EventHandler<WorkerStateEvent>() {
+                            @Override
+                            public void handle(WorkerStateEvent workerStateEvent) {
+                                System.out.println("Task cancelled, printing workerStateEvent....");
+                                System.out.println(workerStateEvent.toString());
+                            }
+                        });
                         task.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
                             @Override
                             public void handle(WorkerStateEvent workerStateEvent) {
@@ -316,12 +332,16 @@ public class LayoutController {
     }
 
     private void renderSeamGraph(byte[] imageData, int numHorizVertices, int numVertVertices) {
-        imageCanvas.getGraphicsContext2D().getPixelWriter().setPixels(0,0,
-                                                                      numHorizVertices,
-                                                                      numVertVertices,
-                                                                      PixelFormat.getByteRgbInstance(),
-                                                                      imageData, 0,
-                                                                      numHorizVertices*3);
+        try {
+            imageCanvas.getGraphicsContext2D().getPixelWriter().setPixels(0, 0,
+                    numHorizVertices,
+                    numVertVertices,
+                    PixelFormat.getByteRgbInstance(),
+                    imageData, 0,
+                    numHorizVertices * 3);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         System.out.println("renderSeamGraph complete...");
     }
 

@@ -105,7 +105,15 @@ public class OptimizedSeamCarverTest {
                 SeamGraphVertex leftVertex = v.left;
                 SeamGraphVertex rightVertex = v.right;
 
-                if (topVertex != null && !topVertex.isSink && !(topVertex.coord.y + 1 == v.coord.y)) {
+                if (y == 0 && (v.topLeft != null || v.topRight != null)) {
+                    return false;
+                }
+
+                if (y == 0 && ((x == 0 && leftVertex != null) || (x == G.numHorizVertices - 1 && rightVertex != null))) {
+                    return false;
+                }
+
+                if (topVertex != null && !topVertex.isSink && !topVertex.isSource && !(topVertex.coord.y + 1 == v.coord.y)) {
                     return false;
                 }
 
