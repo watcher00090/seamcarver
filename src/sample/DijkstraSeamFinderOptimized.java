@@ -652,7 +652,7 @@ public class DijkstraSeamFinderOptimized {
 
             for (int i = 1; i < lastSeam.size(); ++i) {
 
-                //System.out.println("processing a vertex in the seam removal method...");
+                //System.out.println("i = " + i + ", processing a vertex in the seam removal method...");
 
                 v1 = lastSeam.get(i-1);
                 v2 = lastSeam.get(i);

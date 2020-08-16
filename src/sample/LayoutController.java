@@ -1,5 +1,6 @@
 package sample;
 
+import edu.princeton.cs.algs4.Picture;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.WorkerStateEvent;
@@ -91,11 +92,17 @@ public class LayoutController {
 
     private AtomicInteger seamGraphResizerTaskCount = new AtomicInteger(0);
 
+    private AtomicInteger totalNumberOfResizeTasksRun = new AtomicInteger(0);
+
+
+    /*
     private ExecutorService exec = Executors.newSingleThreadExecutor(r -> {
         Thread t = new Thread(r);
         t.setDaemon(true); // allows app to exit if tasks are running
         return t ;
     });
+     */
+    private ExecutorService exec = Executors.newSingleThreadExecutor();
 
     @FXML
     void handleImageDrag(ActionEvent event) {
@@ -104,7 +111,26 @@ public class LayoutController {
 
     @FXML
     void saveSeamCarvedImage(ActionEvent event) {
+        try {
+            Picture p = sf.verticalSeamGraph.toPicture();
+            p.save("tmp_image.png");
+            FileInputStream stream = new FileInputStream("tmp_image.png");
+            Image image = new Image(stream);
 
+            ImageView imageView = new ImageView(image);
+            Group root = new Group(imageView);
+            Scene popupScene = new Scene(root);
+            Stage popupStage = new Stage();
+
+            popupStage.setWidth(image.getWidth());
+            popupStage.setHeight(image.getHeight());
+            popupStage.setTitle("Displaying the image after seam carving.....");
+            popupStage.setScene(popupScene);
+            popupStage.setResizable(true);
+            popupStage.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -137,6 +163,7 @@ public class LayoutController {
         imageWidth = image.widthProperty().doubleValue();
         imageHeight = image.heightProperty().doubleValue();
 
+        //TODO: change this to renderSeamGraph(arg1, arg2, arg3), like in the event handlers
         renderSeamGraph();
 
         //drawImage(image);
@@ -229,31 +256,33 @@ public class LayoutController {
 
                 if (diffx < 0 && enableWestResize) {
                     //imageWidth = imageWidth + diffx;
-                    imageCanvas.setWidth(imageCanvas.getWidth() + diffx);
+                    imageCanvas.setWidth(imageCanvas.widthProperty().doubleValue() + diffx);
 
-                    /*
-                    System.out.println("diffx = " + diffx);
                     for (int k=0; k<Math.abs(diffx); ++k) {
-                        sf.removeLowestEnergySeam();
-                    }
-                    renderSeamGraph();
-                    */
+                        Task<SeamGraphTaskResult> task = new Task<>() {
+                            @Override
+                            public SeamGraphTaskResult call() {
+                                sf.removeLowestEnergySeam();
+                                return sf.getTaskResult();
+                            }
+                        };
+                        task.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+                            @Override
+                            public void handle(WorkerStateEvent workerStateEvent) {
+                                System.out.println("Task completed!");
+                                int numRunningTasks = seamGraphResizerTaskCount.decrementAndGet();
+                                System.out.println("Number of remaining tasks = " + numRunningTasks);
+                                SeamGraphTaskResult res = (SeamGraphTaskResult) workerStateEvent.getSource().getValue();
+                                renderSeamGraph(res.imageData, res.numHorizVertices, res.numVertVertices);
 
-                    Task<SeamGraphTaskResult> task = new Task<>() {
-                        @Override public SeamGraphTaskResult call() {
-                            sf.removeLowestEnergySeam();
-                            return sf.getTaskResult();
-                        }
-                    };
-                    task.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
-                        @Override
-                        public void handle(WorkerStateEvent workerStateEvent) {
-                            System.out.println("Task completed!");
-                            SeamGraphTaskResult res = (SeamGraphTaskResult) workerStateEvent.getSource().getValue();
-                            renderSeamGraph(res.imageData, res.numHorizVertices, res.numVertVertices);
-                        }
-                    });
-                    exec.submit(task); // single-threaded executor
+                                System.out.println("numHorizVertices = " + res.numHorizVertices);
+                                System.out.println("imageCanvas.width = "  + imageCanvas.widthProperty().doubleValue());
+                            }
+                        });
+                        seamGraphResizerTaskCount.getAndIncrement();
+                        totalNumberOfResizeTasksRun.getAndIncrement();
+                        exec.submit(task); // single-threaded executor
+                    }
                 }
                 if (diffy < 0 && enableNorthResize) {
                     //imageHeight = imageHeight + diffy;
