@@ -368,7 +368,7 @@ public class DijkstraSeamFinderOptimized {
     public boolean DEBUG_MODE = false;
 
     private final ShortestPathFinder<Graph<SeamGraphVertex, Edge<SeamGraphVertex>>, SeamGraphVertex, Edge<SeamGraphVertex>> pf;
-    public List<Integer> lastSeam = null;
+    //public List<Integer> lastSeam = null;
     public SeamGraphVertex topRowVertex = null;
     public SeamGraphOptimized verticalSeamGraph;
 
@@ -420,7 +420,8 @@ public class DijkstraSeamFinderOptimized {
             res.imageData = imageData;
             res.numHorizVertices = this.verticalSeamGraph.numHorizVertices;
             res.numVertVertices = this.verticalSeamGraph.numVertVertices;
-            res.seam = lastSeam;
+            //res.seam = lastSeam;
+
             return res;
         } catch (Exception e) {
             e.printStackTrace();
@@ -559,11 +560,11 @@ public class DijkstraSeamFinderOptimized {
 
             for (int x = 0; x < prevRow.length; ++x) {
 
-                start.edgeList.add((new SeamGraphEdge<SeamGraphVertex>(start, prevRow[x], 0, SeamGraphEdgeLocator.bottomEdge)));
+                start.edgeList.add((new SeamGraphEdge<>(start, prevRow[x], 0, SeamGraphEdgeLocator.bottomEdge)));
                 prevRow[x].top = start;
             }
 
-            start.leftChild = prevRow[0];
+            //start.leftChild = prevRow[0];
         }
 
         public Picture toPicture() {
@@ -639,14 +640,33 @@ public class DijkstraSeamFinderOptimized {
 
         // x is a dummy variable
         // seamEdges contains the edge linking the source to the first vertex in the image graph
-        public void removeSeam(List<SeamGraphVertex> lastSeam, List<Edge<SeamGraphVertex>> seamEdges) {
-            SeamGraphVertex v = lastSeam.get(0); // for traversing the graph
+        public void removeSeam(List<SeamGraphVertex> seamVertices, List<Edge<SeamGraphVertex>> seamEdges) {
+            SeamGraphVertex v = seamVertices.get(0); // for traversing the graph
+            SeamGraphVertex firstVertexInSeam = seamVertices.get(0);
 
-            if (start.edgeList.size() <= v.coord.x) {
-                System.out.println('O');
+        //   if (start.edgeList.size() <= v.coord.x || v.top.edgeList.size() <= v.coord.x) {
+        //        System.out.println('O');
+        //    }
+
+            for (int j=0; j<numHorizVertices; ++j ){
+                if (this.start.edgeList.get(j).to.coord.x != j) {
+                    System.out.println('O');
+                }
             }
-            start.edgeList.remove(v.top.edgeList.get(v.coord.x)); // remove the edge from the source
+
+            start.edgeList.remove(start.edgeList.get(v.coord.x)); // remove the edge from the source
+
             correctXCoordinatesOfRightVertices(v); // correct x coordinate of 1st vertex
+
+
+            /*
+            for (int j=0; j<numHorizVertices; ++j ){
+                if (this.start.edgeList.get(j).to.coord.x != j) {
+                    System.out.println('O');
+                }
+            }
+            */
+
 
             SeamGraphVertex v1;
             SeamGraphVertex v2 = null;
@@ -658,12 +678,12 @@ public class DijkstraSeamFinderOptimized {
 
             //System.out.println("removing a seam...");
 
-            for (int i = 1; i < lastSeam.size(); ++i) {
+            for (int i = 1; i < seamVertices.size(); ++i) {
 
                 //System.out.println("i = " + i + ", processing a vertex in the seam removal method...");
 
-                v1 = lastSeam.get(i-1);
-                v2 = lastSeam.get(i);
+                v1 = seamVertices.get(i-1);
+                v2 = seamVertices.get(i);
                 joiningEdge = (SeamGraphEdge<SeamGraphVertex>) seamEdges.get(i);
 
                 switch (joiningEdge.type) {
@@ -794,6 +814,13 @@ public class DijkstraSeamFinderOptimized {
             if (v2.right != null) computeEnergy(v2.right);
 
             this.numHorizVertices--;
+
+            for (int j=0; j<numHorizVertices; ++j ){
+                if (this.start.edgeList.get(j).to.coord.x != j) {
+                    System.out.println('O');
+                }
+            }
+
         }
 
         public void removeSeam(List<Integer> lastSeam) {
@@ -1023,12 +1050,10 @@ public class DijkstraSeamFinderOptimized {
 
         // v is in the seam
         private void correctXCoordinatesOfRightVertices(SeamGraphVertex v) {
-            if (DEBUG_MODE) {
-                SeamGraphVertex curs = (SeamGraphVertex) (((SeamGraphVertex) v).right);
-                while (curs != null) {
-                    curs.coord.x--;
-                    curs = (SeamGraphVertex) (curs.right);
-                }
+            SeamGraphVertex curs = (SeamGraphVertex) (((SeamGraphVertex) v).right);
+            while (curs != null) {
+                curs.coord.x--;
+                curs = (SeamGraphVertex) (curs.right);
             }
         }
 
@@ -1213,7 +1238,7 @@ public class DijkstraSeamFinderOptimized {
                 System.exit(1);
             }
 
-            (((SeamGraphVertex) v).top).edgeList.remove(lastSeam.get(0)); // remove the edge from the source
+            (((SeamGraphVertex) v).top).edgeList.remove(v.top.edgeList.get(lastSeam.get(0))); // remove the edge from the source
             computeEnergy((SeamGraphVertex) (((SeamGraphVertex) v).left));
             computeEnergy((SeamGraphVertex) (((SeamGraphVertex) v).right));
 
@@ -1276,7 +1301,7 @@ public class DijkstraSeamFinderOptimized {
 
     public void removeLowestEnergySeam_old() {
         List<Integer> seam = this.findVerticalSeam();
-        this.lastSeam = seam;
+        //this.lastSeam = seam;
         this.verticalSeamGraph.removeSeam(seam);
         System.out.println("Got here!");
     }
@@ -1287,8 +1312,14 @@ public class DijkstraSeamFinderOptimized {
 
         List<SeamGraphVertex> ret = new LinkedList<>();
         List<Edge<SeamGraphVertex>> seamEdges = sp.edges();
-        for (int i=0; i<seamEdges.size()-1; ++i) {
-            ret.add(seamEdges.get(i).to);
+        //for (int i=0; i<seamEdges.size()-1; ++i) {
+        //    ret.add(seamEdges.get(i).to);
+        //}
+
+        for (SeamGraphVertex vertex : sp.vertices()) {
+            if (!vertex.isSource && !vertex.isSink) {
+                ret.add(vertex);
+            }
         }
 
         //System.out.println("removeLowestEnergySeam::numHorizVertices = " + verticalSeamGraph.numHorizVertices);

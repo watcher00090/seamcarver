@@ -759,6 +759,11 @@ public class OptimizedSeamCarverTest {
     }
 
     @Test
+    public void checkThatTopRowVerticesHaveTheAppropriateCoordinates() {
+
+    }
+
+    @Test
     public void removingVerticalSeamsPreservesGraphInvariantsHardCodedSeam4() {
         Picture picture = PictureUtils.loadPicture("small_image_1.png");
         double[][] energies = SeamCarver.computeEnergies(picture, new DualGradientEnergyFunction());

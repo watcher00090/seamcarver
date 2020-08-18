@@ -18,7 +18,6 @@ public class SeamCarverTest {
         assertTrue(testThatInTheVerticalSeamGraphEdgesAreSetUpCorrectly("small_image_3.png"));
     }
 
-
     boolean testThatInTheVerticalSeamGraphEdgesAreSetUpCorrectly(String filename) {
 
         int count = 0;

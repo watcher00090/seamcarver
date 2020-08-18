@@ -149,7 +149,8 @@ public class LayoutController {
     private void openFile(File file) throws FileNotFoundException {
         System.out.println("Uploading a new image...");
         FileInputStream stream = new FileInputStream(file);
-        Image image = new Image(stream);
+        //Image image = new Image(stream);
+        Picture picture = new Picture(file);
         //ImageView imageView = new ImageView(image);
         Dimension screenSize = Toolkit.getDefaultToolkit ().getScreenSize ();
         double windowWidth = screenSize.getWidth();
@@ -157,11 +158,16 @@ public class LayoutController {
 
         //WritableImage writableImage = new WritableImage(image.widthProperty().intValue(), image.heightProperty().intValue());
         //ImageView imageView = new ImageView();
-        imageCanvas = new Canvas(image.getWidth(),image.getHeight());
-        this.sf = new DijkstraSeamFinderOptimized(image);
+        imageCanvas = new Canvas(picture.width(), picture.height());
+        double[][] E = SeamCarver.computeEnergies(picture, new DualGradientEnergyFunction());
+        //perturb(E);
+        this.sf = new DijkstraSeamFinderOptimized(picture, E);
 
-        imageWidth = image.widthProperty().doubleValue();
-        imageHeight = image.heightProperty().doubleValue();
+        imageWidth = picture.width();
+        imageHeight = picture.height();
+
+        System.out.println("initial image width = " + imageWidth);
+        System.out.println("initial image height = " + imageHeight);
 
         //TODO: change this to renderSeamGraph(arg1, arg2, arg3), like in the event handlers
         renderSeamGraph();
@@ -285,6 +291,13 @@ public class LayoutController {
                         task.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
                             @Override
                             public void handle(WorkerStateEvent workerStateEvent) {
+
+                                for (int j=0; j<imageCanvas.widthProperty().intValue(); ++j ){
+                                    if (sf.verticalSeamGraph.start.edgeList.get(j).to.coord.x != j) {
+                                        //System.out.println('O');
+                                    }
+                                }
+
                                 System.out.println("Task completed!");
                                 int numRunningTasks = seamGraphResizerTaskCount.decrementAndGet();
                                 System.out.println("Number of remaining tasks = " + numRunningTasks);
@@ -327,6 +340,14 @@ public class LayoutController {
             for (int y=0; y<image.heightProperty().intValue(); ++y) {
                 //writableImage.getPixelWriter().setArgb(x,y,image.getPixelReader().getArgb(x,y));
                 writableImage.getPixelWriter().setArgb(x,y,sf.verticalSeamGraph.rgbfetcher.getRGB(x,y));
+            }
+        }
+    }
+
+    private static void perturb(double[][] energies) {
+        for (int i=0;i<energies.length; ++i) {
+            for (int j=0;j<energies[i].length; ++j) {
+                energies[i][j] += (Math.random() / 1.0E5);
             }
         }
     }
