@@ -403,9 +403,12 @@ public class DijkstraSeamFinderOptimized {
             byte[] imageData = new byte[this.verticalSeamGraph.numHorizVertices * this.verticalSeamGraph.numVertVertices * 3];
 
             int i = 0;
+            SeamGraphVertex curr = this.verticalSeamGraph.start.edgeList.get(0).to;
+            SeamGraphVertex firstInRow = curr;
+
             for (int y = 0; y < this.verticalSeamGraph.numVertVertices; ++y) {
                 for (int x = 0; x < this.verticalSeamGraph.numHorizVertices; ++x) {
-                    int rgb = this.verticalSeamGraph.rgbfetcher.getRGB(x, y);
+                    int rgb = curr.rgb;
 
                     int b = (rgb >> 0) & 0xFF;
                     int g = (rgb >> 8) & 0xFF;
@@ -415,7 +418,11 @@ public class DijkstraSeamFinderOptimized {
                     imageData[i + 1] = (byte) g;
                     imageData[i + 2] = (byte) b;
                     i += 3;
+
+                    curr = curr.right;
                 }
+                curr = firstInRow.bottom;
+                firstInRow = curr;
             }
             res.imageData = imageData;
             res.numHorizVertices = this.verticalSeamGraph.numHorizVertices;
