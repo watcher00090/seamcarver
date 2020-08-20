@@ -25,9 +25,11 @@ import javafx.stage.Stage;
 import org.assertj.core.internal.bytebuddy.implementation.bind.annotation.IgnoreForBinding;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
@@ -42,6 +44,8 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.concurrent.Task;
+
+import javax.imageio.ImageIO;
 
 enum CursorMode {
     NW_RESIZE, N_RESIZE, W_RESIZE, NORMAL;
@@ -112,22 +116,27 @@ public class LayoutController {
     @FXML
     void saveSeamCarvedImage(ActionEvent event) {
         try {
+
             Picture p = sf.verticalSeamGraph.toPicture();
-            p.save("tmp_image.png");
-            FileInputStream stream = new FileInputStream("tmp_image.png");
-            Image image = new Image(stream);
 
-            ImageView imageView = new ImageView(image);
-            Group root = new Group(imageView);
-            Scene popupScene = new Scene(root);
-            Stage popupStage = new Stage();
+            BufferedImage imageToSave = new BufferedImage(p.width(), p.height(), BufferedImage.TYPE_INT_RGB);
 
-            popupStage.setWidth(image.getWidth());
-            popupStage.setHeight(image.getHeight());
-            popupStage.setTitle("Displaying the image after seam carving.....");
-            popupStage.setScene(popupScene);
-            popupStage.setResizable(true);
-            popupStage.show();
+            for (int x=0; x<p.width(); ++x) {
+                for (int y=0; y<p.height(); ++y) {
+                    imageToSave.setRGB(x,y,p.getRGB(x,y));
+                }
+            }
+
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Save Image");
+            File outputfile = fileChooser.showSaveDialog(stage);
+
+            if (outputfile != null) {
+                ImageIO.write(imageToSave, "png", outputfile);
+            } else {
+
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -402,7 +411,18 @@ public class LayoutController {
 
     @FXML
     void openSaveDialog(ActionEvent event) {
+        /*
+        try {
+            Picture p = sf.verticalSeamGraph.toPicture();
 
+            //BufferedImage bi = new BufferedImage();
+            File outputfile = new File("saved.png");
+            //ImageIO.write(bi, "png", outputfile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        
+         */
     }
 
     void setStageAndSetupListeners(Stage stage, FileChooser fileChooser) {
