@@ -655,16 +655,18 @@ public class DijkstraSeamFinderOptimized {
         //        System.out.println('O');
         //    }
 
+            /*
             for (int j=0; j<numHorizVertices; ++j ){
                 if (this.start.edgeList.get(j).to.coord.x != j) {
                     System.out.println('O');
                 }
             }
+             */
 
-            start.edgeList.remove(start.edgeList.get(v.coord.x)); // remove the edge from the source
+            //start.edgeList.remove(start.edgeList.get(v.coord.x)); // remove the edge from the source
+            //correctXCoordinatesOfRightVertices(v); // correct x coordinate of 1st vertex
 
-            correctXCoordinatesOfRightVertices(v); // correct x coordinate of 1st vertex
-
+            start.edgeList.remove(seamEdges.get(0));
 
             /*
             for (int j=0; j<numHorizVertices; ++j ){
@@ -822,11 +824,13 @@ public class DijkstraSeamFinderOptimized {
 
             this.numHorizVertices--;
 
+            /*
             for (int j=0; j<numHorizVertices; ++j ){
                 if (this.start.edgeList.get(j).to.coord.x != j) {
                     System.out.println('O');
                 }
             }
+             */
 
         }
 
