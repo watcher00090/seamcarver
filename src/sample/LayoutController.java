@@ -12,6 +12,7 @@ import javafx.scene.Cursor;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -129,6 +130,10 @@ public class LayoutController {
 
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Save Image");
+
+            fileChooser.getExtensionFilters().addAll(
+                    new FileChooser.ExtensionFilter("Image File", "*.png", "*.jpg", "*.gif"));
+
             File outputfile = fileChooser.showSaveDialog(stage);
 
             if (outputfile != null) {
@@ -309,6 +314,15 @@ public class LayoutController {
 
                                 System.out.println("Task completed!");
                                 int numRunningTasks = seamGraphResizerTaskCount.decrementAndGet();
+
+                                if (numRunningTasks == 0) {
+                                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                                    alert.setTitle("All resizing tasks complete!");
+                                    alert.setHeaderText(null);
+                                    alert.setContentText("All resizing tasks have been completed!");
+                                    alert.showAndWait();
+                                }
+
                                 System.out.println("Number of remaining tasks = " + numRunningTasks);
                                 SeamGraphTaskResult res = (SeamGraphTaskResult) workerStateEvent.getSource().getValue();
                                 renderSeamGraph(res.imageData, res.numHorizVertices, res.numVertVertices);
