@@ -4,8 +4,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -19,6 +21,9 @@ import java.util.stream.IntStream;
  * invariant check that does nothing).
  */
 public class ArrayHeapMinPQTests extends BaseTest {
+
+    static int N = 200000;
+    static int K = 1000;
 
     protected <T extends Comparable<T>> ExtrinsicMinPQ<T> createMinPQ() {
         return new ArrayHeapMinPQ<>();
@@ -415,6 +420,135 @@ public class ArrayHeapMinPQTests extends BaseTest {
             List<Integer> output = removeAll(pq);
             assertThat(output).containsExactly(largeCorrectOrdering);
             //assertThat(pq).isValid();
+        }
+
+        @Test
+        void addPerformanceTest() {
+            System.out.println("starting addPerformanceTest()....");
+            ExtrinsicMinPQ<Integer> pq = setUpMinPQ();
+            double[] prioritiesArray = new double[N];
+            int[] valuesArray = new int[N];
+            HashSet<Integer> vals = new HashSet<Integer>();
+
+            for (int i = 0; i < N; i++) {
+                int x = (int) Math.round(Math.random() * (10000 * N));
+                double priority = Math.floor(1000 * Math.random()) / 1000.0;
+
+                while (vals.contains(x)) {
+                    x = (int) Math.round(Math.random() * (10000 * N));
+                }
+                vals.add(x);
+                prioritiesArray[i] = priority;
+                valuesArray[i] = x;
+            }
+
+            long tot = 0;
+            for (int i = 0; i < N; ++i) {
+                if (i % 1000 == 0) {
+
+                    // j adds, then average
+                    for (int j = 1; j <= K; ++j) {
+                        long t1 = System.currentTimeMillis();
+                        pq.add(valuesArray[i], prioritiesArray[i]);
+                        long t2 = System.currentTimeMillis();
+                        long time = t2 - t1;
+                        tot += time;
+                        pq.add(valuesArray[i], 0.00000001);
+                    }
+
+                    System.out.print("(" + i + ", " + (double) (tot) / (double) K + "), ");
+
+                } else {
+                    pq.add(valuesArray[i], prioritiesArray[i]);
+                }
+            }
+
+        }
+
+        @Test
+        void removePerformanceTest() {
+            System.out.println("starting removePerformanceTest()....");
+            ExtrinsicMinPQ<Integer> pq = setUpMinPQ();
+            double[] prioritiesArray = new double[N];
+            int[] valuesArray = new int[N];
+            HashSet<Integer> vals = new HashSet<Integer>();
+            for (int i = 0; i < N; ++i) {
+                int x = (int) Math.round(Math.random() * (10000 * N));
+                double priority = Math.floor(1000 * Math.random()) / 1000.0;
+
+                while (vals.contains(x)) {
+                    x = (int) Math.round(Math.random() * (10000 * N));
+                }
+                vals.add(x);
+                prioritiesArray[i] = priority;
+                valuesArray[i] = x;
+            }
+
+            for (int i = 0; i < N; ++i) {
+                pq.add(valuesArray[i], prioritiesArray[i]);
+            }
+
+            for (int i = 0; i < N; ++i) {
+                if (i % 1000 == 0) {
+
+                    long tot = 0;
+
+                    for (int j=0; j<K; ++j) {
+                        long t1 = System.currentTimeMillis();
+                        int x = pq.removeMin();
+                        long t2 = System.currentTimeMillis();
+                        long time = t2 - t1;
+                        tot += time;
+                        pq.add(x, 0.000000001);
+                    }
+                    System.out.print("(" + (N - i) + ", " + (double) tot / (double) K + "), ");
+
+                } else {
+                    pq.removeMin();
+                }
+            }
+        }
+
+        @Test
+        void changePriorityPerformanceTest() {
+            System.out.println("starting changePriorityPerformanceTest....");
+
+            ExtrinsicMinPQ<Integer> pq = setUpMinPQ();
+            double[] prioritiesArray = new double[N];
+            double[] secondPrioritiesArray = new double[N];
+            int[] valuesArray = new int[N];
+            HashSet<Integer> vals = new HashSet<Integer>();
+            for (int i = 0; i < N; ++i) {
+                int x = (int) Math.round(Math.random() * (10000 * N));
+                double priority = Math.floor(1000 * Math.random()) / 1000.0;
+                double priority2 = Math.floor(1000 * Math.random()) / 1000.0;
+
+                while (vals.contains(x)) {
+                    x = (int) Math.round(Math.random() * (10000 * N));
+                }
+                vals.add(x);
+                prioritiesArray[i] = priority;
+                secondPrioritiesArray[i] = priority2;
+                valuesArray[i] = x;
+            }
+
+            for (int i = 0; i < N; ++i) {
+                pq.add(valuesArray[i], prioritiesArray[i]);
+                if (i % 1000 == 0) {
+
+                    long tot = 0;
+                    for (int j=0; j<K; ++j) {
+                        double oldPriority = prioritiesArray[i];
+                        long t1 = System.currentTimeMillis();
+                        pq.changePriority(valuesArray[i], secondPrioritiesArray[i]);
+                        long t2 = System.currentTimeMillis();
+                        long time = t2 - t1;
+                        pq.changePriority(valuesArray[i], oldPriority);
+                        tot += time;
+                    }
+                    System.out.print("(" + (N - i) + ", " + (double) tot / (double) K + "), ");
+                }
+            }
         }
 
     }
