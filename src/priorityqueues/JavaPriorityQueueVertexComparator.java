@@ -1,14 +1,14 @@
 package priorityqueues;
 
+import java.util.HashMap;
 import java.util.Map;
-import java.util.TreeMap;
 
 public class JavaPriorityQueueVertexComparator<T> implements java.util.Comparator<T> {
 
     Map<T, Double> priorities;
 
     public JavaPriorityQueueVertexComparator() {
-        this.priorities = new TreeMap<T, Double>();
+        this.priorities = new HashMap<T, Double>();
     }
 
     public Map<T, Double> map() {

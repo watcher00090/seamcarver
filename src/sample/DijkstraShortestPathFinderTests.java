@@ -13,7 +13,7 @@ public class DijkstraShortestPathFinderTests extends BaseGraphTests {
         DijkstraShortestPathFinder<G, V, E> shortestPathFinder = new DijkstraShortestPathFinder<>() {
             /** Override method to simulate behavior on grader. */
             @Override
-            protected <T> ExtrinsicMinPQ<T> createMinPQ() {
+            protected <T> priorityqueues.ExtrinsicMinPQ<T> createMinPQ() {
                 return super.createMinPQ();
             }
         };

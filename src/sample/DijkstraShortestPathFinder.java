@@ -1,5 +1,7 @@
 package sample;
 
+import priorityqueues.JavaPriorityQueue;
+
 import java.util.*;
 
 /**
@@ -10,9 +12,9 @@ import java.util.*;
 public class DijkstraShortestPathFinder<G extends Graph<V, E>, V, E extends BaseEdge<V, E>>
     implements ShortestPathFinder<G, V, E> {
 
-    protected <T> ExtrinsicMinPQ<T> createMinPQ() {
-        return new DoubleMapMinPQ<T>();
-        //return new JavaPriorityQueue<T>();
+    protected <T> priorityqueues.ExtrinsicMinPQ<T> createMinPQ() {
+        //return new DoubleMapMinPQ<T>();
+        return new JavaPriorityQueue<T>();
         /*
         If you have confidence in your heap implementation, you can disable the line above
         and enable the one below.
@@ -48,7 +50,7 @@ public class DijkstraShortestPathFinder<G extends Graph<V, E>, V, E extends Base
 
         Map<V, E> predecessorEdge = new HashMap<>();
         Map<V, Double> distTo = new HashMap<>(); // maps a vertex to its distance from 'start'
-        ExtrinsicMinPQ<V> orderedPerimeter = createMinPQ();
+        priorityqueues.ExtrinsicMinPQ<V> orderedPerimeter = createMinPQ();
 
         orderedPerimeter.add(start, 0);
         distTo.put(start, 0.0);

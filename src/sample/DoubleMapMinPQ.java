@@ -11,7 +11,7 @@ import java.util.TreeMap;
  * Use this PQ implementation if you don't want to use your ArrayHeapMinPQ.
  * This implementation is, in theory, slower than ArrayHeapMinPQ.
  */
-public class DoubleMapMinPQ<T> implements ExtrinsicMinPQ<T> {
+public class DoubleMapMinPQ<T> implements priorityqueues.ExtrinsicMinPQ<T> {
     private final TreeMap<Double, Set<T>> priorityToItem = new TreeMap<>();
     private final HashMap<T, Double> itemToPriority = new HashMap<>();
 
