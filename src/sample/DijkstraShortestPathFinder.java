@@ -1,9 +1,6 @@
 package sample;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Computes shortest paths using Dijkstra's algorithm.
@@ -14,7 +11,8 @@ public class DijkstraShortestPathFinder<G extends Graph<V, E>, V, E extends Base
     implements ShortestPathFinder<G, V, E> {
 
     protected <T> ExtrinsicMinPQ<T> createMinPQ() {
-        return new DoubleMapMinPQ<>();
+        return new DoubleMapMinPQ<T>();
+        //return new JavaPriorityQueue<T>();
         /*
         If you have confidence in your heap implementation, you can disable the line above
         and enable the one below.
